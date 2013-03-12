@@ -1,0 +1,30 @@
+main 
+var n;
+var f;
+{
+	let n <- 10;
+	let f <- 112;
+	
+	if n > 0 then
+	  if f <0 then
+	    let f <- f *n;
+	    let n <- f
+	  else
+	  	  let f <- 2;
+	  	  let n <- f;
+	  	    while n > 0 do
+	  	      let n <- f - n;
+	  	      let n <- n + 1;
+	  	      while f > n do
+	  	        let n <- f - 1;
+	  	        let n <- f - 1
+	  	      od
+	  	    od
+	  fi
+	else
+	  let f <- f + n;
+	  let n <- n + 2
+	fi;
+	
+	let n<- f
+}.

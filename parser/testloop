@@ -1,0 +1,22 @@
+main
+var i, j, k, a;
+{
+	let i <- 0;
+	let j <- 0;
+	let k <- 0;
+	let a <- 0;
+	while i < 10 do
+		let j <- 0;
+		while j < 10 do
+			let k <- 0;
+			while k < 10 do
+				let a <- a + i + j + k;
+				let k <- k + 1
+			od;
+			let j <- j + 1
+		od;
+		let i <- i + 1
+	od;
+	call OutputNum(a)
+}
+.

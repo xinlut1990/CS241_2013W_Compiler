@@ -1,0 +1,29 @@
+main
+var x, y;
+
+procedure bar( a );
+var b, c;
+{
+	let b <- 1;
+	let c <- 1;
+	let y <- b
+};
+
+function boo( a, b );
+var i;
+{
+	let i <- 0;
+		let x <- x * x;
+		call OutputNum(x);
+	return x + 4
+	
+};
+{
+	call bar( 1 );
+	let x <- 3 + 7 - 2;
+	let y <- ( 895 * 2 * 2 ) / 2;
+	call OutputNum(y);
+	let y <- y + call boo( 2, 4 );
+	call OutputNum(y)
+}
+.
