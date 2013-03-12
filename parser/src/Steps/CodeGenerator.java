@@ -207,7 +207,6 @@ public class CodeGenerator {
 					PutF1(ADD, a, b, c);
 				}
 
-
 				break;
 			default:
 				break;	
@@ -254,9 +253,9 @@ public class CodeGenerator {
 	
 	private void generateBranchInst(Instruction inst, int opCode) {
 		int a = 0;
+		a = inst.getOperand1().regno;
 		int b = 0;
 		int c = 0;
-		a = inst.getOperand1().regno;
 		c = inst.getOperand2().block.getAddrOfFirstInst() - this.pc;
 		PutF2(opCode, a, b, c);
 	}
