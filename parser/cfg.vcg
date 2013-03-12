@@ -1,0 +1,177 @@
+graph: { title: "Control Flow Graph"
+layoutalgorithm: dfs
+manhattan_edges: yes
+smanhattan_edges: yes
+node: {
+title: "0"
+label: "0[
+0 : move    ,
+1 : move 0  x_1 R1 ,
+2 : move 0  y_2 R2 ,
+3 : move 0  z_3 R3 ,
+4 : move 0  (4) ,
+5 : move 16  (5) ,
+6 : move 0  c_6 R4 ,
+7 : move 0  x_7 R20 ,
+8 : move 0  y_8 R5 ,
+9 : move 0  z_9 R6 ,
+10 :    [5] ,
+11 :    [1] ,
+72 : move (29) R25  R27 ,
+12 : write   (29) R25 ,
+13 : end    ,
+]"
+}
+node: {
+title: "1"
+label: "1[
+14 : move 0  i_14 R17 ,
+15 : move 0  d_15 R18 ,
+16 : move 0  i_16 R19 ,
+]"
+}
+edge: { sourcename: "1"
+targetname: "2"
+color: blue
+}
+node: {
+title: "2"
+label: "2[
+17 : PHI (17) := (24) R23 y_8 R5 ,
+18 : PHI (18) := (25) R21 z_9 R6 ,
+19 : PHI x_19 := x_7 R20 x_7 R20 ,
+20 : PHI (20) := (26) R24 d_15 R18 ,
+21 : PHI (21) := (27) R22 i_16 R19 ,
+22 : cmp i_21 R22  10 ,
+23 : bge (22)  [4] ,
+]"
+}
+edge: { sourcename: "2"
+targetname: "3"
+color: blue
+}
+edge: { sourcename: "2"
+targetname: "4"
+color: blue
+}
+node: {
+title: "3"
+label: "3[
+24 : add y_17 R23  2 ,
+25 : add x_19 R1  2 ,
+26 : add (24) R23  (25) R21 ,
+27 : add i_21 R22  1 ,
+75 : move [2]  R27 ,
+28 : bra   [2] ,
+]"
+}
+edge: { sourcename: "3"
+targetname: "2"
+color: blue
+}
+node: {
+title: "4"
+label: "4[
+29 : move d_20 R24  (29) R25 ,
+30 :     ,
+]"
+}
+node: {
+title: "5"
+label: "5[
+31 : move 0  i_31 R7 ,
+32 : move 0  j_32 R8 ,
+33 : move 0  e_33 R9 ,
+34 : move 0  i_34 R10 ,
+35 : move 0  j_35 R11 ,
+]"
+}
+edge: { sourcename: "5"
+targetname: "6"
+color: blue
+}
+node: {
+title: "6"
+label: "6[
+36 : PHI j_36 := j_40 R16 j_35 R11 ,
+37 : PHI (37) := (57) R15 i_34 R10 ,
+38 : cmp i_37 R15  4 ,
+39 : bge (38)  [11] ,
+]"
+}
+edge: { sourcename: "6"
+targetname: "7"
+color: blue
+}
+edge: { sourcename: "6"
+targetname: "11"
+color: blue
+}
+node: {
+title: "7"
+label: "7[
+]"
+}
+edge: { sourcename: "7"
+targetname: "8"
+color: blue
+}
+node: {
+title: "8"
+label: "8[
+40 : PHI (40) := (50) R13 j_36 R16 ,
+41 : cmp j_40 R16  4 ,
+42 : bge (41)  [10] ,
+]"
+}
+edge: { sourcename: "8"
+targetname: "9"
+color: blue
+}
+edge: { sourcename: "8"
+targetname: "10"
+color: blue
+}
+node: {
+title: "9"
+label: "9[
+43 : mul j_40 R16  4 ,
+44 : add 0  (43) R2 ,
+45 : mul i_37 R15  16 ,
+46 : add (44) R2  (45) R3 ,
+47 : add R28  (5) ,
+48 : adda (46) R2  (47) R3 ,
+49 : store j_40 R16  (48) ,
+50 : add j_40 R16  1 ,
+74 : move [8]  R27 ,
+51 : bra   [8] ,
+]"
+}
+edge: { sourcename: "9"
+targetname: "8"
+color: blue
+}
+node: {
+title: "10"
+label: "10[
+52 : mul i_37 R15  4 ,
+53 : add 0  (52) R2 ,
+54 : add R28  (4) ,
+55 : adda (53) R2  (54) R3 ,
+56 : store i_37 R15  (55) ,
+57 : add i_37 R15  1 ,
+73 : move [6]  R27 ,
+58 : bra   [6] ,
+]"
+}
+edge: { sourcename: "10"
+targetname: "6"
+color: blue
+}
+node: {
+title: "11"
+label: "11[
+59 :     ,
+]"
+}
+}

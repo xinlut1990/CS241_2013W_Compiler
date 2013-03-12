@@ -9,7 +9,7 @@ import DataStructures.BasicBlock;
 import DataStructures.ControlFlowGraph;
 import DataStructures.Function;
 import DataStructures.Instruction;
-import DataStructures.Result;
+import DataStructures.Operand;
 import DataStructures.SSA;
 import DataStructures.VariableManager;
 
@@ -103,30 +103,30 @@ public class Parser {
 	}
 	
 	//get the identifier of variable
-	private Result ident() {
+	private Operand ident() {
 		
-		Result x = new Result();
+		Operand x = new Operand();
 		x.ident = this.scanner.getId();
 		this.next();
 		return x;
 	}
 	
-	private Result designator(BasicBlock curBB, List<BasicBlock> joinBlockChain, Function func, boolean isAssign) {
-		Result x = new Result();
-		List<Result> dimensions = new ArrayList<Result>();
+	private Operand designator(BasicBlock curBB, List<BasicBlock> joinBlockChain, Function func, boolean isAssign) {
+		Operand x = new Operand();
+		List<Operand> dimensions = new ArrayList<Operand>();
 		if(scannerSym == Token.identifier) {
 			//get identifier from scanner
 			x = this.ident();
 			//see if variable has been declared in function
 			if(func != null) {
 				if(func.variableExists(x.ident)) {
-					x.kind = Result.var;
+					x.kind = Operand.var;
 				} 
 			}
 			//see if variable has been declared in main
-			if(x.kind == Result.unknown) {
+			if(x.kind == Operand.unknown) {
 				if(VariableManager.variableExists(x.ident)) {
-					x.kind = Result.var;
+					x.kind = Operand.var;
 					//add use of global variable in function
 					if(func != null) {
 						func.addGlobalVarsUsed(x.ident);
@@ -141,7 +141,7 @@ public class Parser {
 				while(scannerSym == Token.openbracketToken) {
 					this.next();
 					
-					Result y = this.expression(curBB, joinBlockChain, func);
+					Operand y = this.expression(curBB, joinBlockChain, func);
 					dimensions.add(y);
 					
 					if(scannerSym == Token.closebracketToken) {
@@ -154,48 +154,48 @@ public class Parser {
 			
 			//generate array instructions
 			if(!dimensions.isEmpty()) {
-				x.kind = Result.array;
+				x.kind = Operand.array;
 				x.arr = this.getArray(x.ident);
 				//address interval
-				Result temp = Result.makeConst(0);
+				Operand temp = Operand.makeConst(0);
 				int size = 4;
 				//traverse back from the last dimension
 				for(int i = dimensions.size() - 1; i >= 0; i--) {
-					if(dimensions.get(i).kind == Result.constant) {
+					if(dimensions.get(i).kind == Operand.constant) {
 						//if index is constant, directly calculate relative address
-						if(temp.kind == Result.constant){
+						if(temp.kind == Operand.constant){
 							temp.val += dimensions.get(i).val * size;
 							
-						} else if(temp.kind == Result.var){
-							Result tempBefore = temp;
+						} else if(temp.kind == Operand.var){
+							Operand tempBefore = temp;
 							temp = createTempResult();	
-							curBB.generateIntermediateCode(Instruction.mul, dimensions.get(i), Result.makeConst(size));
-							Result tempBetween = temp;
+							curBB.generateIntermediateCode(Instruction.mul, dimensions.get(i), Operand.makeConst(size));
+							Operand tempBetween = temp;
 							temp = createTempResult();
 							curBB.generateIntermediateCode(Instruction.add, tempBefore, tempBetween);
 						}
 						
-					} else if(dimensions.get(i).kind == Result.var) {
-						Result tempBefore = temp;
+					} else if(dimensions.get(i).kind == Operand.var) {
+						Operand tempBefore = temp;
 						temp = createTempResult();	
-						curBB.generateIntermediateCode(Instruction.mul, dimensions.get(i), Result.makeConst(size));
-						Result tempBetween = temp;
+						curBB.generateIntermediateCode(Instruction.mul, dimensions.get(i), Operand.makeConst(size));
+						Operand tempBetween = temp;
 						temp = createTempResult();
 						curBB.generateIntermediateCode(Instruction.add, tempBefore, tempBetween);
 					}
 					size *= x.arr.getDimension(i); 
 				}
-				Result plusIndex = temp;
+				Operand plusIndex = temp;
 				
-				Result baseAddress = createTempResult();
-				Result fp = Result.makeReg(28);
+				Operand baseAddress = createTempResult();
+				Operand fp = Operand.makeReg(28);
 				x.ssa = x.arr.getBase();
 				curBB.generateIntermediateCode(Instruction.add, fp, x);
 				
-				Result arrResult = createTempResult();
+				Operand arrResult = createTempResult();
 				curBB.generateIntermediateCode(Instruction.adda, plusIndex, baseAddress);
 				
-				arrResult.kind = Result.array;
+				arrResult.kind = Operand.array;
 				
 				return arrResult;
 			} else {//not array
@@ -209,16 +209,16 @@ public class Parser {
 
 	}
 
-	private Result createTempResult() {
-		Result temp = Result.makeVar(TEMP);
+	private Operand createTempResult() {
+		Operand temp = Operand.makeVar(TEMP);
 		VariableManager.addAssignment(Instruction.getPC(), temp);
 		return temp;
 	}
 	
-	private Result factor(BasicBlock curBB, List<BasicBlock> joinBlockChain, Function func) {
-		Result x = null;
+	private Operand factor(BasicBlock curBB, List<BasicBlock> joinBlockChain, Function func) {
+		Operand x = null;
 		if(scannerSym == Token.number) { //number
-			x = Result.makeConst(scanner.getVal());
+			x = Operand.makeConst(scanner.getVal());
 			this.next();
 		} else if(scannerSym == Token.openparenToken) { //(expression)
 			this.next();
@@ -233,7 +233,7 @@ public class Parser {
 			x = this.funcCall(curBB, joinBlockChain, func);
 		} else if(scannerSym == Token.identifier) {
 			x = this.designator(curBB, joinBlockChain, func, false);
-			if(x.kind != Result.array) {
+			if(x.kind != Operand.array) {
 				//if global variable is first used in a function
 				if(func != null && func.getGlobalVarsUsed().contains(x.ident)) {
 					//move reference of global to local 
@@ -268,7 +268,7 @@ public class Parser {
 					}
 				}	
 			} else {
-				Result address = x;
+				Operand address = x;
 				x = createTempResult();
 				curBB.generateIntermediateCode(Instruction.load, address, null);
 			}
@@ -282,17 +282,17 @@ public class Parser {
 	}
 	//TODO: compute
 	//avoid generating code when both operands are constant
-	private Result compute(BasicBlock curBB, int op, Result x, Result y) {
-		Result temp = null;
+	private Operand compute(BasicBlock curBB, int op, Operand x, Operand y) {
+		Operand temp = null;
 		
 		//if both operands are constant, than temp var is constant, no need to generate computation instruction
-		if(x.kind == Result.constant && y.kind == Result.constant) {
+		if(x.kind == Operand.constant && y.kind == Operand.constant) {
 			int computeResult = 0;
 			
 			if(op == Instruction.cmp){
 				computeResult = x.val - y.val;
 				temp = createTempResult();	
-				Result cmpConst = Result.makeConst(computeResult);
+				Operand cmpConst = Operand.makeConst(computeResult);
 				curBB.generateIntermediateCode(Instruction.move, cmpConst, temp);
 				return temp;
 			}
@@ -306,7 +306,7 @@ public class Parser {
 				computeResult = x.val / y.val;	
 			
 			//create a constant to store computation result
-			temp = Result.makeConst(computeResult);
+			temp = Operand.makeConst(computeResult);
 			
 		} else {
 			temp = createTempResult();	
@@ -315,8 +315,8 @@ public class Parser {
 		return temp;		
 	}
 	
-	private Result term(BasicBlock curBB, List<BasicBlock> joinBlockChain, Function func) {
-		Result x, y;
+	private Operand term(BasicBlock curBB, List<BasicBlock> joinBlockChain, Function func) {
+		Operand x, y;
 		int op;
 		x = this.factor(curBB, joinBlockChain, func);
 		while(scannerSym == Token.timesToken || scannerSym == Token.divToken){
@@ -329,8 +329,8 @@ public class Parser {
 		return x;
 	}
 	
-	private Result expression(BasicBlock curBB, List<BasicBlock> joinBlockChain, Function func) {
-		Result x, y;
+	private Operand expression(BasicBlock curBB, List<BasicBlock> joinBlockChain, Function func) {
+		Operand x, y;
 		int op;
 		x = this.term(curBB, joinBlockChain, func);
 		while(scannerSym == Token.plusToken || scannerSym == Token.minusToken){
@@ -343,9 +343,9 @@ public class Parser {
 		return x;
 	}
 	
-	private Result relation(BasicBlock curBB, List<BasicBlock> joinBlockChain, Function func) {
-		Result x, y;
-		Result cond = null;
+	private Operand relation(BasicBlock curBB, List<BasicBlock> joinBlockChain, Function func) {
+		Operand x, y;
+		Operand cond = null;
 		int op;
 		x = this.expression(curBB, joinBlockChain, func);
 		if(scannerSym >= Token.eqlToken && scannerSym <= Token.gtrToken) {
@@ -355,12 +355,12 @@ public class Parser {
 			y = this.expression(curBB, joinBlockChain, func);
 			
 			x = this.compute(curBB, Instruction.cmp, x, y);
-			cond = new Result();
-			if(x.kind == Result.constant) {
-				cond.kind = Result.constant;
+			cond = new Operand();
+			if(x.kind == Operand.constant) {
+				cond.kind = Operand.constant;
 				cond.val = x.val;
 			} else {
-				cond.kind = Result.condition;
+				cond.kind = Operand.condition;
 				cond.ssa = x.ssa;
 			}
 			
@@ -373,8 +373,8 @@ public class Parser {
 		return cond;
 	}
 	//TODO: assign
-	private void assign(BasicBlock curBB, List<BasicBlock> joinBlockChain, Result y, Result x) {
-		if(x.kind != Result.constant) {
+	private void assign(BasicBlock curBB, List<BasicBlock> joinBlockChain, Operand y, Operand x) {
+		if(x.kind != Operand.constant) {
 			
 //			int assignVal = 0;
 //			
@@ -388,7 +388,7 @@ public class Parser {
 
 			
 			//look up the constant table, if exists the same constant, use previous ssa
-			if(y.kind == Result.constant) {
+			if(y.kind == Operand.constant) {
 				if(!VariableManager.constantExist(y.val)) {
 					VariableManager.addAssignment(Instruction.getPC(), x);
 					VariableManager.addConstant(y.val, x.ssa);
@@ -417,7 +417,7 @@ public class Parser {
 	
 	//The following five functions have the assumption that their keywords have already been detected. 
 	private void assignment(BasicBlock curBB, List<BasicBlock> joinBlockChain, Function func) {
-		Result x, y;
+		Operand x, y;
 		//consume "let"
 		this.next();
 		x = this.designator(curBB, joinBlockChain, func, true);
@@ -443,12 +443,12 @@ public class Parser {
 			this.next();
 			y = this.expression(curBB, joinBlockChain, func);
 			
-			if(x.kind != Result.array){
+			if(x.kind != Operand.array){
 				//assign y to x	
 				assign(curBB, joinBlockChain, y, x);	
 			} else {
-				if(y.kind == Result.constant) {
-					Result temp = this.createTempResult();
+				if(y.kind == Operand.constant) {
+					Operand temp = this.createTempResult();
 					curBB.generateIntermediateCode(Instruction.move, y, temp);
 					curBB.generateIntermediateCode(Instruction.store, temp, x);
 				} else {
@@ -466,18 +466,18 @@ public class Parser {
 		//returnAddress.val = Instruction.getPC() + 2;
 		
 		//jump to subroutineBranch
-		Result branch = Result.makeBranch(null);
+		Operand branch = Operand.makeBranch(null);
 		branch.block = this.getFunction(functionIdent).getBlock();
 		curBB.generateIntermediateCode(Instruction.subroutine, null, branch);
 	}
 	
-	private Result funcCall(BasicBlock curBB, List<BasicBlock> joinBlockChain, Function outerFunc) {
-		Result funcIdent, argument, returnValue;
+	private Operand funcCall(BasicBlock curBB, List<BasicBlock> joinBlockChain, Function outerFunc) {
+		Operand funcIdent, argument, returnValue;
 		int paramIdx = 0;
 		//consume "call"
 		this.next();
 
-		List<Result> arguments = new ArrayList<Result>();
+		List<Operand> arguments = new ArrayList<Operand>();
 		
 		if(scannerSym == Token.identifier) {
 			
@@ -524,7 +524,7 @@ public class Parser {
 			}
 			//call function
 			if(functionIdent == 0) {//inputNum
-				Result input = Result.makeVar(TEMP);
+				Operand input = Operand.makeVar(TEMP);
 				
 				VariableManager.addAssignment(Instruction.getPC(), input);	
 				curBB.generateIntermediateCode(Instruction.read, input, null);
@@ -545,8 +545,8 @@ public class Parser {
 				}
 				//assign the use of global variables
 				for(SSA localGlobal : curFunc.getLocalizedGlobalVars()) {
-					Result x = Result.makeVar(localGlobal.getIdentifier());
-					Result localX = Result.makeVar(x.ident);
+					Operand x = Operand.makeVar(localGlobal.getIdentifier());
+					Operand localX = Operand.makeVar(x.ident);
 					localX.ssa = localGlobal;
 					
 					boolean isFound = false;
@@ -578,18 +578,18 @@ public class Parser {
 	}
 	
 	//Negative conditional branch forward
-	private void condNegBraFwd(Result condition, BasicBlock curBB) {
+	private void condNegBraFwd(Operand condition, BasicBlock curBB) {
 		//the location of instruction negatedBranchOp, record that for later fix
 		condition.fixuplocation = Instruction.getPC();
 		
 		//make a branch address operand pointing to nowhere
-		Result branch = Result.makeBranch(null);
+		Operand branch = Operand.makeBranch(null);
 		curBB.generateIntermediateCode(negatedBranchOp[condition.cond], condition, branch);
 	}
 	
-	private void unCondBraFwd(Result x, BasicBlock curBB) {
+	private void unCondBraFwd(Operand x, BasicBlock curBB) {
 		//build linked list by storing previous value
-		Result branch = Result.makeBranch(null);
+		Operand branch = Operand.makeBranch(null);
 		branch.fixuplocation = x.fixuplocation;
 		curBB.generateIntermediateCode(Instruction.bra, null, branch);
 		
@@ -624,8 +624,8 @@ public class Parser {
 	private BasicBlock ifStatement(BasicBlock curBB, List<BasicBlock> joinBlockChain, Function func) {
 		//consume "if"
 		this.next();
-		Result follow = new Result();
-		Result x = relation(curBB, joinBlockChain, func);
+		Operand follow = new Operand();
+		Operand x = relation(curBB, joinBlockChain, func);
 		//create a join block linked after if block
 		BasicBlock joinBlock = new BasicBlock(curBB.getIsElses());
 		joinBlockChain.add(0, joinBlock);
@@ -694,7 +694,7 @@ public class Parser {
 	}
 	
 	private BasicBlock whileStatement(BasicBlock curBB, List<BasicBlock> joinBlockChain, Function func) {
-		Result x;
+		Operand x;
 		//consume "while"
 		this.next();
 		//used to reassign all use of variable in the loop
@@ -728,7 +728,7 @@ public class Parser {
 			printError("while-statement without \"do\" token.");
 		}
 		
-		Result branch = Result.makeBranch(curBB);
+		Operand branch = Operand.makeBranch(curBB);
 		doLastBlock.generateIntermediateCode(Instruction.bra, null, branch);
 		
 		//link loop block back to condition
@@ -756,7 +756,7 @@ public class Parser {
 	}
 	
 	private void returnStatement(BasicBlock curBB, List<BasicBlock> joinBlockChain, Function func) {
-		Result result;
+		Operand result;
 		//consume "return"
 		this.next();
 		if(scannerSym == Token.identifier 
@@ -846,15 +846,15 @@ public class Parser {
 		}
 	}
 	
-	private void typeDecl(Result var) {
+	private void typeDecl(Operand var) {
 		if(scannerSym == Token.varToken) {
 			this.next();
 			
-			var.kind = Result.var;
+			var.kind = Operand.var;
 		} else if(scannerSym == Token.arrToken) {
 			this.next();
 			
-			var.kind = Result.array;
+			var.kind = Operand.array;
 			Array arr = new Array();
 			var.arr = arr;
 			
@@ -901,12 +901,12 @@ public class Parser {
 		}
 	}
 	
-	private void declareVariable(BasicBlock curBB, Result var, Function func) {
-		if(var.kind == Result.var) {
-			Result defaultVal = Result.makeConst(0);
+	private void declareVariable(BasicBlock curBB, Operand var, Function func) {
+		if(var.kind == Operand.var) {
+			Operand defaultVal = Operand.makeConst(0);
 			
 			var = this.ident();
-			var.kind = Result.var;
+			var.kind = Operand.var;
 			this.registerVariable(var.ident, func);
 			
 			if(!VariableManager.constantExist(defaultVal.val)) {
@@ -920,21 +920,21 @@ public class Parser {
 				func.addLocalVar(var.ssa);
 			}
 			curBB.generateIntermediateCode(Instruction.move, defaultVal, var);
-		} else if(var.kind == Result.array) {
+		} else if(var.kind == Operand.array) {
 			Array arr = var.arr.copy();
 			
 			var = this.ident();
 			arr.setIdent(var.ident);
 			this.arrayList.add(arr);
 			
-			var.kind = Result.array;
+			var.kind = Operand.array;
 			this.registerVariable(var.ident, func);
 			
 			var.arr = arr;
 
 			VariableManager.addAssignment(Instruction.getPC(), var);
 			var.arr.setBase(var.ssa);
-			Result base = Result.makeConst(Array.curBase);
+			Operand base = Operand.makeConst(Array.curBase);
 			curBB.generateIntermediateCode(Instruction.move, base, var);
 			var.arr.nextBase();
 		} else {
@@ -945,7 +945,7 @@ public class Parser {
 	
 	//TODO: varDecl
 	private void varDecl(BasicBlock curBB, Function func) {
-		Result var = new Result();
+		Operand var = new Operand();
 		
 		this.typeDecl(var);
 		
@@ -965,7 +965,7 @@ public class Parser {
 	}
 	
 	private void funcDecl() {
-		Result func = new Result();
+		Operand func = new Operand();
 		//consume "function" or "procedure"
 		this.next();
 		
@@ -992,7 +992,7 @@ public class Parser {
 	}
 	
 	private void formalParam(Function func) {
-		Result param = new Result();
+		Operand param = new Operand();
 		
 		if(scannerSym == Token.openparenToken) {
 			this.next();

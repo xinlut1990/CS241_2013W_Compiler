@@ -7,7 +7,7 @@ import java.util.List;
 import DataStructures.BasicBlock;
 import DataStructures.ControlFlowGraph;
 import DataStructures.Instruction;
-import DataStructures.Result;
+import DataStructures.Operand;
 import DataStructures.SSA;
 import DataStructures.VariableManager;
 
@@ -35,12 +35,12 @@ public class Optimizer {
 		for(int i = 0; i < instList.size(); i++) {
 			//get each move instruction
 			if(instList.get(i).getOperator() == Instruction.move && instList.get(i).isCopiable()) {
-				Result toBeReplaced = instList.get(i).getOperand2();
-				Result toReplace = instList.get(i).getOperand1();
+				Operand toBeReplaced = instList.get(i).getOperand2();
+				Operand toReplace = instList.get(i).getOperand1();
 				//no copy propagation for constant assignments
-				if(toReplace.kind != Result.constant) {
+				if(toReplace.kind != Operand.constant) {
 					for(int j = 0; j < instList.size(); j++) {
-						Result curOperand = instList.get(j).getOperand1();
+						Operand curOperand = instList.get(j).getOperand1();
 						if(curOperand != null) {
 							if(curOperand.ssa == toBeReplaced.ssa && curOperand != toBeReplaced) {
 								replaceAllUse(curOperand, toReplace);
@@ -65,12 +65,12 @@ public class Optimizer {
 			}
 		}
 		for(int i = instList.size() - 1; i >= 0; i--) {
-			if(instList.get(i).getOperator() == Instruction.move && instList.get(i).getOperand1().kind != Result.constant && instList.get(i).isCopiable()) {
+			if(instList.get(i).getOperator() == Instruction.move && instList.get(i).getOperand1().kind != Operand.constant && instList.get(i).isCopiable()) {
 				//remove ssa of temp 
 				VariableManager.removeSSA(VariableManager.getSSAByVersion(instList.get(i).getId()));
 				//remove use
-				Result op1 = instList.get(i).getOperand1();
-				Result op2 = instList.get(i).getOperand2();
+				Operand op1 = instList.get(i).getOperand1();
+				Operand op2 = instList.get(i).getOperand2();
 				op1.ssa.removeUse(op1);
 				op2.ssa.removeUse(op2);
 				
@@ -80,18 +80,18 @@ public class Optimizer {
 		}
 	}
 	
-	private void replaceAllUse(Result curOperand, Result toReplace) {
+	private void replaceAllUse(Operand curOperand, Operand toReplace) {
 		SSA ssa = curOperand.ssa;
-		List<Result> useChain = ssa.getUseChain();
-		List<Result> replacedUses = new ArrayList<Result>();
-		for(Result use : useChain) {
+		List<Operand> useChain = ssa.getUseChain();
+		List<Operand> replacedUses = new ArrayList<Operand>();
+		for(Operand use : useChain) {
 			replacedUses.add(use);
 			toReplace.copy(curOperand);
 		}
 		
 		useChain.removeAll(replacedUses);
 		
-		for(Result use : replacedUses) {
+		for(Operand use : replacedUses) {
 			use.ssa.addUse(use);
 		}
 	}

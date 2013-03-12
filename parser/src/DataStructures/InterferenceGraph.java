@@ -244,9 +244,9 @@ public class InterferenceGraph {
 
 	}
 	
-	private void mergeCluster(Cluster phiCluster, Result phiOperand) {
+	private void mergeCluster(Cluster phiCluster, Operand phiOperand) {
 		//for all yi that are not constants do
-		if(phiOperand.kind != Result.constant) {
+		if(phiOperand.kind != Operand.constant) {
 			SSA ssa = phiOperand.ssa;
 			Cluster origCluster = this.findCluster(ssa);
 			if(origCluster != null && phiCluster != origCluster) {

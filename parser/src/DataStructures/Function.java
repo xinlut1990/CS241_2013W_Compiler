@@ -15,16 +15,16 @@ public class Function {
 	private List<SSA> localizedGlobalVars = new ArrayList<SSA>();
 
 
-	private Result returnVar = null;
+	private Operand returnVar = null;
 	
-	public Result getReturnVar() {
+	public Operand getReturnVar() {
 		return returnVar;
 	}
 
 	public Function(int ident, BasicBlock funcBB) {
 		this.ident = ident;
 		this.funcBB = funcBB;
-		Result temp = Result.makeVar(-1);
+		Operand temp = Operand.makeVar(-1);
 		VariableManager.addAssignment(Instruction.getPC(), temp);
 		returnVar = temp;
 	}
@@ -33,9 +33,9 @@ public class Function {
 		paramList.add(ssa);
 	}
 	
-	public Result getParamAt(int idx) {
+	public Operand getParamAt(int idx) {
 		SSA paramSSA = paramList.get(idx);
-		Result param = Result.makeVar(paramSSA.getIdentifier());
+		Operand param = Operand.makeVar(paramSSA.getIdentifier());
 		param.ssa = paramSSA;
 		return param;
 	}

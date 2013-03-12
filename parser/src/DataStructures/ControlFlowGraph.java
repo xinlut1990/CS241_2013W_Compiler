@@ -248,16 +248,16 @@ public class ControlFlowGraph {
 		
 	}
 	
-	private String operandToString(Result operand) {
+	private String operandToString(Operand operand) {
 		String result = "";
 		if(operand != null) {
-			if(operand.kind == Result.constant) {
+			if(operand.kind == Operand.constant) {
 				result = String.valueOf(operand.val);
-			} else if(operand.kind == Result.branch) {
+			} else if(operand.kind == Operand.branch) {
 				result = "[" + operand.block.getId() + "]";
-			} else if(operand.kind == Result.condition) {
+			} else if(operand.kind == Operand.condition) {
 				result = "(" + operand.ssa.getVersion() + ")";
-			} else if(operand.kind == Result.var) {
+			} else if(operand.kind == Operand.var) {
 				int id = operand.ssa.getIdentifier();
 				if(id == -1) {
 					result += "(" + operand.ssa.getVersion() + ")" ;
@@ -268,9 +268,9 @@ public class ControlFlowGraph {
 				if(operand.regno != 0) {
 					result += " R" + operand.regno;
 				}
-			} else if(operand.kind == Result.reg) {
+			} else if(operand.kind == Operand.reg) {
 				result = "R" + operand.regno;
-			} else if(operand.kind == Result.array) {
+			} else if(operand.kind == Operand.array) {
 				result = "(" + operand.ssa.getVersion() + ")" ;
 			}
 		}

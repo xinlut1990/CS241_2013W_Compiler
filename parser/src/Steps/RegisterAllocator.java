@@ -9,7 +9,7 @@ import DataStructures.Cluster;
 import DataStructures.ControlFlowGraph;
 import DataStructures.Instruction;
 import DataStructures.InterferenceGraph;
-import DataStructures.Result;
+import DataStructures.Operand;
 import DataStructures.SSA;
 import DataStructures.VariableManager;
 
@@ -43,7 +43,7 @@ public class RegisterAllocator {
 		//add move before branch because branch cannot use immediate number
 		for(int i = instList.size() - 1; i >= 0; i --) {
 			if(instList.get(i).getOperator() == Instruction.bra || instList.get(i).getOperator() == Instruction.write) {
-				Result branchReg = Result.makeReg(27);
+				Operand branchReg = Operand.makeReg(27);
 				Instruction move = new Instruction(Instruction.move, instList.get(i).getOperand2(), branchReg);
 				BasicBlock blockOfBranch = this.cfg.findBlockOf(instList.get(i));
 				blockOfBranch.insertBefore(instList.get(i), move);
@@ -90,7 +90,7 @@ public class RegisterAllocator {
 			if(instList.get(i).getOperator() == Instruction.phi) {
 				SSA phiSSA = VariableManager.getSSAByVersion(instList.get(i).getId());
 
-				Result phiOperand = Result.makeVar(-1);
+				Operand phiOperand = Operand.makeVar(-1);
 				phiOperand.ssa = phiSSA;
 				phiOperand.regno = phiSSA.getReg();
 				

@@ -167,11 +167,11 @@ public class BasicBlock {
 		instructions.addAll(0, phiFuncs);
 	}
 	
-	private void makePhiFunc(Result x, SSA backupVar, boolean isElse) {
+	private void makePhiFunc(Operand x, SSA backupVar, boolean isElse) {
 		this.backupsBeforeLoop.add(backupVar);
-		Result backup = Result.makeVar(backupVar.getIdentifier());
+		Operand backup = Operand.makeVar(backupVar.getIdentifier());
 		backup.ssa = backupVar;
-		Result variation = x.copy();
+		Operand variation = x.copy();
 		
 		if(!isElse) {
 			this.backup1s.add(x.ssa);
@@ -185,7 +185,7 @@ public class BasicBlock {
 		
 	}
 	
-	private void setPhiFuncOperand(Result x, boolean isElse) {
+	private void setPhiFuncOperand(Operand x, boolean isElse) {
 		int idx = 0;
 		//find phi function containing x
 
@@ -209,7 +209,7 @@ public class BasicBlock {
 	}
 	
 	
-	public void generateIntermediateCode(int operator, Result operand1, Result operand2) {
+	public void generateIntermediateCode(int operator, Operand operand1, Operand operand2) {
 		Instruction inst = new Instruction(operator,operand1, operand2);
 		ControlFlowGraph.addInst(inst);
 		this.addInstruction(inst);
@@ -252,7 +252,7 @@ public class BasicBlock {
 		return null;
 	}
 	
-	public boolean phiIscreated(Result x) {
+	public boolean phiIscreated(Operand x) {
 		for(SSA ssa: backup1s) {
 			if(ssa.getIdentifier() == x.ident) {
 				return true;
@@ -263,7 +263,7 @@ public class BasicBlock {
 	}
 	
 	//Either create or update the corresponding phi function of a variable.
-	public void updatePhiFunction(Result x, BasicBlock curBB, List<BasicBlock> joinBlockChain) {
+	public void updatePhiFunction(Operand x, BasicBlock curBB, List<BasicBlock> joinBlockChain) {
 		//if there exists a join block, need to generate or update phi function
 			if(this.phiIscreated(x)) {
 				this.setPhiFuncOperand(x, curBB.getIsElse(0));
@@ -303,7 +303,7 @@ public class BasicBlock {
 	}
 	
 	
-	public void updatePhiFunctionLocalizedGlobal(Result x, boolean isElse) {
+	public void updatePhiFunctionLocalizedGlobal(Operand x, boolean isElse) {
 		//if there exists a join block, need to generate or update phi function
 			if(this.phiIscreated(x)) {
 				this.setPhiFuncOperand(x, isElse);
@@ -317,7 +317,7 @@ public class BasicBlock {
 		List<Instruction> phiFunctions = this.getPhiFuncs();
 		for(Instruction phi : phiFunctions) {
 			
-			Result x = Result.makeVar(phi.getOperand1().ident);
+			Operand x = Operand.makeVar(phi.getOperand1().ident);
 			
 			VariableManager.addAssignment(phi.getId(), x);
 			BasicBlock outerJoinBlock = null;
@@ -341,14 +341,14 @@ public class BasicBlock {
 	public void renameOldUse(int SSABeforeWhile, int SSABeforePhi) {
 		for(int i = 0; i < this.backupsBeforeLoop.size(); i ++) {
 			SSA oldDefine = this.backupsBeforeLoop.get(i);
-			List<Result> useChain = oldDefine.getUseChain();
-			List<Result> renamedUses = new ArrayList<Result>();
+			List<Operand> useChain = oldDefine.getUseChain();
+			List<Operand> renamedUses = new ArrayList<Operand>();
 			
 			List<Instruction> instList = ControlFlowGraph.getInstList();
 			for(int j = 0; j < instList.size(); j++) {
 				int instId = instList.get(j).getId();
 				if(instId >= SSABeforeWhile && instId < SSABeforePhi) {
-					Result use = instList.get(j).getOperand1();
+					Operand use = instList.get(j).getOperand1();
 					if(useChain.contains(use) && use.inst != this.phiFuncs.get(i).getId()) {
 						renamedUses.add(use);
 						use.ssa = VariableManager.getSSAByVersion(this.phiFuncs.get(i).getId());
@@ -363,7 +363,7 @@ public class BasicBlock {
 			
 			useChain.removeAll(renamedUses);
 			
-			for(Result use : renamedUses) {
+			for(Operand use : renamedUses) {
 				use.ssa.addUse(use);
 			}
 		}
@@ -382,7 +382,7 @@ public class BasicBlock {
 	public void fixLoopBackup() {
 		for(int i = 0; i < this.backup2s.size(); i++) {
 			this.backup2s.set(i, this.backupsBeforeLoop.get(i));
-			Result op2 = this.phiFuncs.get(i).getOperand2();
+			Operand op2 = this.phiFuncs.get(i).getOperand2();
 			op2.ssa = this.backupsBeforeLoop.get(i);
 		}
 

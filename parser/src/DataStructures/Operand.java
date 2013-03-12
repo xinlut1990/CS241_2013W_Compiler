@@ -1,7 +1,7 @@
 package DataStructures;
 
 //Intermediate result of a expression or operand
-public class Result{
+public class Operand{
 	public static final int unknown = 0;
 	public static final int constant = 1;
 	public static final int var = 2;//variable
@@ -21,36 +21,36 @@ public class Result{
 	public int fixuplocation = 0; //fixup location
 	public Array arr = null;
 	
-	public static Result makeVar(int ident) {
-		Result result = new Result();
+	public static Operand makeVar(int ident) {
+		Operand result = new Operand();
 		result.kind = var;
 		result.ident = ident;
 		return result;
 	}
 	
-	public static Result makeReg(int regno) {
-		Result result = new Result();
+	public static Operand makeReg(int regno) {
+		Operand result = new Operand();
 		result.kind = reg;
 		result.regno = regno;
 		return result;
 	}
 	
-	public static Result makeConst(int val) {
-		Result result = new Result();
+	public static Operand makeConst(int val) {
+		Operand result = new Operand();
 		result.kind = constant;
 		result.val = val;
 		return result;
 	}
 	
-	public static Result makeBranch(BasicBlock block) {
-		Result result = new Result();
+	public static Operand makeBranch(BasicBlock block) {
+		Operand result = new Operand();
 		result.kind = branch;
 		result.block = block;
 		return result;
 	}
 	
-	public Result copy() {
-		Result copy = new Result();
+	public Operand copy() {
+		Operand copy = new Operand();
 		copy.kind = this.kind;
 		copy.val = this.val;
 		copy.block = this.block;
@@ -62,7 +62,7 @@ public class Result{
 		return copy;
 	}
 	
-	public void copy(Result target) {
+	public void copy(Operand target) {
 		target.kind = this.kind;
 		target.val = this.val;
 		target.block = this.block;

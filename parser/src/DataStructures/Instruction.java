@@ -41,8 +41,8 @@ public class Instruction {
 	
 	//Each kind of instruction has no more than 2 operands. If some instruction doesn't have 2 operands, leave one to be null
 	private int operator; 
-	private Result operand1;
-	private Result operand2;
+	private Operand operand1;
+	private Operand operand2;
 	
 	private boolean copiable = true;
 	
@@ -50,7 +50,7 @@ public class Instruction {
 		pc = 0;
 	}
 	
-	public Instruction(int op, Result operand1, Result operand2){
+	public Instruction(int op, Operand operand1, Operand operand2){
 		this.operator = op;
 		this.operand1 = operand1;
 		this.operand2 = operand2;
@@ -88,22 +88,22 @@ public class Instruction {
 		this.operator = operator;
 	}
 
-	public Result getOperand1() {
+	public Operand getOperand1() {
 		return operand1;
 	}
 
-	public void setOperand1(Result operand1) {
+	public void setOperand1(Operand operand1) {
 		this.operand1 = operand1;
 		if(operand1 != null) {
 			this.operand1.inst = this.getId();
 		}
 	}
 
-	public Result getOperand2() {
+	public Operand getOperand2() {
 		return operand2;
 	}
 
-	public void setOperand2(Result operand2) {
+	public void setOperand2(Operand operand2) {
 		this.operand2 = operand2;
 		if(operand2 != null) {
 			this.operand2.inst = this.getId();

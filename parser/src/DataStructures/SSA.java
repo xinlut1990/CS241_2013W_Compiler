@@ -14,7 +14,7 @@ public class SSA {
 	private int reg = 0;
 	
 	//define-use chain
-	private List<Result> useChain = new ArrayList<Result>();
+	private List<Operand> useChain = new ArrayList<Operand>();
 	//live range
 	private int deadPos = 0;
 	private int bornPos = 0;
@@ -45,7 +45,7 @@ public class SSA {
 		this.reg = reg;
 	}
 	
-	public List<Result> getUseChain() {
+	public List<Operand> getUseChain() {
 		return useChain;
 	}
 
@@ -56,11 +56,11 @@ public class SSA {
 	}
 	
 	//add use of ssa variable to define-use chain
-	public void addUse(Result x) {
+	public void addUse(Operand x) {
 		this.useChain.add(x);
 	}
 	
-	public void removeUse(Result x) {
+	public void removeUse(Operand x) {
 		this.useChain.remove(x);
 	}
 	

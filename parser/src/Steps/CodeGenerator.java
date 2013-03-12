@@ -4,7 +4,7 @@ import java.util.List;
 
 import DataStructures.ControlFlowGraph;
 import DataStructures.Instruction;
-import DataStructures.Result;
+import DataStructures.Operand;
 import DataStructures.VariableManager;
 
 public class CodeGenerator {
@@ -64,6 +64,7 @@ public class CodeGenerator {
 	private static final int WRH = 52;
 	private static final int WRL = 53;
 	
+	private static final int WORDLEN = 4;
 	private int[] buf;
 	private int pc;
 	private int fp;
@@ -73,7 +74,7 @@ public class CodeGenerator {
 		this.cfg = ra.getCfg();
 		this.pc = 0;
 		this.buf = new int[ControlFlowGraph.getInstList().size() + 1000];
-		this.fp = ControlFlowGraph.getInstList().size() * 4;
+		this.fp = ControlFlowGraph.getInstList().size() * WORDLEN;
 		
 	}
 	
@@ -85,50 +86,57 @@ public class CodeGenerator {
 		List<Instruction> instList = ControlFlowGraph.getInstList();
 		PutF1(ADDI, 28, 0, fp);
 		for(int i = 1; i < instList.size(); i ++) {
+			
+			//initialize operands
 			int a = 0;
 			int b = 0;
 			int c = 0;
-			//inst.getOperand1()
-			switch(instList.get(i).getOperator()) {
+			
+			Instruction inst = instList.get(i);
+			int instId = inst.getId();
+			Operand operand1 = inst.getOperand1();
+			Operand operand2 = inst.getOperand2();
+			
+			switch(inst.getOperator()) {
 			case Instruction.add: 
-				this.generateCompInst(instList.get(i), ADD);
+				this.generateCompInst(instId, ADD, operand1, operand2);
 				break;
 			case Instruction.sub:
-				this.generateCompInst(instList.get(i), SUB);
+				this.generateCompInst(instId, SUB, operand1, operand2);
 				break;
 			case Instruction.mul:
-				this.generateCompInst(instList.get(i), MUL);
+				this.generateCompInst(instId, MUL, operand1, operand2);
 				break;
 			case Instruction.div:
-				this.generateCompInst(instList.get(i), DIV);
+				this.generateCompInst(instId, DIV, operand1, operand2);
 				break;
 			case Instruction.cmp: 
-				this.generateCompInst(instList.get(i), CMP);
+				this.generateCompInst(instId, CMP, operand1, operand2);
 				break;
 			case Instruction.beq: 
-				this.generateBranchInst(instList.get(i), BEQ);
+				this.generateBranchInst(BEQ, operand1, operand2);
 				break;
 			case Instruction.bge: 
-				this.generateBranchInst(instList.get(i), BGE);
+				this.generateBranchInst(BGE, operand1, operand2);
 				break;
 			case Instruction.bgt: 
-				this.generateBranchInst(instList.get(i), BGT);
+				this.generateBranchInst(BGT, operand1, operand2);
 				break;
 			case Instruction.ble: 
-				this.generateBranchInst(instList.get(i), BLE);
+				this.generateBranchInst(BLE, operand1, operand2);
 				break;
 			case Instruction.blt: 
-				this.generateBranchInst(instList.get(i), BLT);
+				this.generateBranchInst(BLT, operand1, operand2);
 				break;
 			case Instruction.bne: 
-				this.generateBranchInst(instList.get(i), BNE);
+				this.generateBranchInst(BNE, operand1, operand2);
 				break;
 			case Instruction.bra: 
 				c = 27;
 				PutF2(RET, a, b, c);
 				break;
 			case Instruction.read:
-				a = VariableManager.getTempRegIn(instList.get(i).getId());
+				a = VariableManager.getTempRegIn(instId);
 				PutF2(RDI, a, b, c);
 				break;
 			case Instruction.write:
@@ -142,68 +150,44 @@ public class CodeGenerator {
 				PutF2(RET, a, b, c);
 				break;
 			case Instruction.load:
-				a = VariableManager.getTempRegIn(instList.get(i).getId());
-				if(instList.get(i).getOperand1().kind == Result.constant) {
-					c = instList.get(i).getOperand1().val;
+				a = VariableManager.getTempRegIn(instId);
+				if(operand1.kind == Operand.constant) {
+					c = operand1.val;
 					PutF1(LDW, a, b, c);
 				} else {
-					b = instList.get(i).getOperand1().regno;
+					b = operand1.regno;
 					PutF1(LDW, a, b, c);
 				}
 				break;
 			case Instruction.store:
-				a = instList.get(i).getOperand1().regno;
-				b = instList.get(i).getOperand2().regno;
+				a = operand1.regno;
+				b = operand2.regno;
 				PutF1(STW, a, b, c);
 				break;
 			case Instruction.push:
-				PutF1(PSH, (pc + 2) * 4, 29, 4);
+				PutF1(PSH, (pc + 2) * WORDLEN, 29, WORDLEN);
 				break;
 			case Instruction.pop:
-				PutF1(POP, 27, 29, 4);
+				PutF1(POP, 27, 29, WORDLEN);
 				break;
 			case Instruction.subroutine:
-				c = instList.get(i).getOperand2().block.getAddrOfFirstInst() * 4;
+				c = operand2.block.getAddrOfFirstInst() * WORDLEN;
 				PutF1(JSR, a, b, c);
 				break;
 			case Instruction.retrn:
 				PutF1(RET, a, b, 31);
 				break;
 			case Instruction.move:
-				if(instList.get(i).getOperand1().kind == Result.constant) {
-					a = instList.get(i).getOperand2().regno;
-					b = 0;
-					c = instList.get(i).getOperand1().val;
-					if(a != 0) {
-						PutF1(ADDI, a, b, c);
-					}
-					
-				} else if(instList.get(i).getOperand1().kind == Result.var) {
-					a = instList.get(i).getOperand2().regno;
-					b = 0;
-					c = instList.get(i).getOperand1().regno;
-					if(a != 0) {
-						PutF1(ADD, a, b, c);
-					}
-
-				} else if(instList.get(i).getOperand1().kind == Result.branch) {
-					
-					a = instList.get(i).getOperand2().regno;
-					b = 0;
-					c = instList.get(i).getOperand1().block.getAddrOfFirstInst() * 4;
-					if(a != 0) {
-						PutF1(ADDI, a, b, c);
-					}
-				}
+				this.generateMoveInst(operand1, operand2);
 				break;
 			case Instruction.adda: 
-				a = VariableManager.getTempRegIn(instList.get(i).getId());
-				b = instList.get(i).getOperand2().regno;
-				if(instList.get(i).getOperand1().kind == Result.constant) {
-					c = instList.get(i).getOperand1().val;
+				a = VariableManager.getTempRegIn(instId);
+				b = operand2.regno;
+				if(operand1.kind == Operand.constant) {
+					c = operand1.val;
 					PutF1(ADDI, a, b, c);
 				} else {
-					c = instList.get(i).getOperand1().regno;
+					c = operand1.regno;
 					PutF1(ADD, a, b, c);
 				}
 
@@ -214,30 +198,58 @@ public class CodeGenerator {
 		}
 	}
 	
+	private void generateMoveInst(Operand operand1, Operand operand2) {
+		int a = 0;
+		int b = 0;
+		int c = 0;
+		
+		a = operand2.regno;
+		b = 0;
+		
+		if(operand1.kind == Operand.constant) {
+			c = operand1.val;
+			if(a != 0) {
+				PutF1(ADDI, a, b, c);
+			}
+		} else if(operand1.kind == Operand.var) {
+			c = operand1.regno;
+			if(a != 0) {
+				PutF1(ADD, a, b, c);
+			}
+
+		} else if(operand1.kind == Operand.branch) {
+			c = operand1.block.getAddrOfFirstInst() * WORDLEN;
+			if(a != 0) {
+				PutF1(ADDI, a, b, c);
+			}
+		}
+	}
+	
 	//generate computational instructions
-	private void generateCompInst(Instruction inst, int opCode) {
+	private void generateCompInst(int instId, int opCode, Operand operand1, Operand operand2) {
 		int a = 0;
 		int b = 0;
 		int c = 0;
 		boolean const1 = false;
 		boolean const2 = false;
-		a = VariableManager.getTempRegIn(inst.getId());
-		if(inst.getOperand1().kind == Result.constant) {
-			b = inst.getOperand1().val;
+		
+		a = VariableManager.getTempRegIn(instId);
+		if(operand1.kind == Operand.constant) {
+			b = operand1.val;
 			if(b != 0) {
 				const1 = true;
 			}
 		} else {
-			b = inst.getOperand1().regno;
+			b = operand1.regno;
 		}
 		
-		if(inst.getOperand2().kind == Result.constant) {
-			c = inst.getOperand2().val;
+		if(operand2.kind == Operand.constant) {
+			c = operand2.val;
 			if(c != 0) {
 				const2 = true;
 			}
 		} else {
-			c = inst.getOperand2().regno;
+			c = operand2.regno;
 		}
 		if(a != 0) {
 			if(const1) {
@@ -251,12 +263,15 @@ public class CodeGenerator {
 
 	}
 	
-	private void generateBranchInst(Instruction inst, int opCode) {
+	//Generate branch instruction
+	private void generateBranchInst(int opCode, Operand operand1, Operand operand2) {
 		int a = 0;
-		a = inst.getOperand1().regno;
 		int b = 0;
 		int c = 0;
-		c = inst.getOperand2().block.getAddrOfFirstInst() - this.pc;
+		
+		a = operand1.regno;
+		c = operand2.block.getAddrOfFirstInst() - this.pc;
+		
 		PutF2(opCode, a, b, c);
 	}
 

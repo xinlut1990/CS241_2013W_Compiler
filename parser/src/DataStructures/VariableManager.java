@@ -37,7 +37,7 @@ public class VariableManager {
 		return SSAList.size();
 	}
 	
-	public static void addAssignment(int version, Result var) {
+	public static void addAssignment(int version, Operand var) {
 		SSAList.add(new SSA(version, var.val, var.ident));
 		var.ssa = SSAList.get(SSAList.size() - 1);
 	}
