@@ -28,11 +28,6 @@ public class ControlFlowGraph {
 	//intermediate instruction list of the program
 	private static List<Instruction> instList = new ArrayList<Instruction>();
 	
-	public static void reset() {
-		BBList = new ArrayList<BasicBlock>();
-		instList = new ArrayList<Instruction>();
-	}
-	
 	public ControlFlowGraph(Scanner scanner) {
 		this.scanner = scanner;
 		this.firstBlock = new BasicBlock(new ArrayList<Boolean>());
@@ -42,6 +37,31 @@ public class ControlFlowGraph {
 			System.out.println(ex.getMessage());
 		}
 		
+	}
+	
+	public static void reset() {
+		BBList = new ArrayList<BasicBlock>();
+		instList = new ArrayList<Instruction>();
+	}
+	
+	public static List<BasicBlock> getBBList() {
+		return BBList;
+	}
+	
+	public static void addInsts(List<Instruction> inst) {
+		instList.addAll(inst);
+	}
+	
+	public static void addInst(Instruction inst) {
+		instList.add(inst);
+	}
+	
+	public static List<Instruction> getInstList() {
+		return instList;
+	}
+	
+	public static void addBB(BasicBlock bb) {
+		BBList.add(bb);
 	}
 	
 	public BasicBlock getFirstBlock() {
@@ -122,28 +142,12 @@ public class ControlFlowGraph {
 		return null;
 	}
 	
-	public static List<BasicBlock> getBBList() {
-		return BBList;
-	}
-	
-	public static void addInsts(List<Instruction> inst) {
-		instList.addAll(inst);
-	}
-	
-	public static void addInst(Instruction inst) {
-		instList.add(inst);
-	}
-	
 	public static void insertInstsBefore(List<Instruction> insts, Instruction before) {
 		for(int i = instList.size() - 1; i >= 0; i--) {
 			if(instList.get(i) == before) {
 				instList.addAll(i, insts);
 			}
 		}
-	}
-
-	public static List<Instruction> getInstList() {
-		return instList;
 	}
 	
 	public void removeFromBasicBlock(int idx) {
@@ -155,10 +159,6 @@ public class ControlFlowGraph {
 				}
 			}
 		}
-	}
-	
-	public static void addBB(BasicBlock bb) {
-		BBList.add(bb);
 	}
 	
 	//functions used to print visualized graph

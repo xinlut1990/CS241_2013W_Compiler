@@ -55,14 +55,11 @@ public class RegisterAllocator {
 		//this.cfg.printCFG();
 		//build interference graph
 		InterferenceGraph ig = new InterferenceGraph();
-		//ig.buildInterferenceGraph();
 		ig.buildIG(this.cfg);
 		//ig.printGraph();
-		//this.cfg.printCFG();
-		
+		//this.cfg.printCFG();		
 		ig.clustering();
 		ig.color();
-
 
 		//synchronize for operands
 		for( Instruction inst : instList) {

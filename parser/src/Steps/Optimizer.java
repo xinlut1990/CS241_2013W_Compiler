@@ -35,9 +35,12 @@ public class Optimizer {
 		for(int i = 0; i < instList.size(); i++) {
 			//get each move instruction
 			if(instList.get(i).getOperator() == Instruction.move && instList.get(i).isCopiable()) {
+				
 				Operand toBeReplaced = instList.get(i).getOperand2();
 				Operand toReplace = instList.get(i).getOperand1();
+				
 				//no copy propagation for constant assignments
+				//TODO: change this to one using define-use chain
 				if(toReplace.kind != Operand.constant) {
 					for(int j = 0; j < instList.size(); j++) {
 						Operand curOperand = instList.get(j).getOperand1();
@@ -64,6 +67,8 @@ public class Optimizer {
 				
 			}
 		}
+		
+		//remove all the move instructions
 		for(int i = instList.size() - 1; i >= 0; i--) {
 			if(instList.get(i).getOperator() == Instruction.move && instList.get(i).getOperand1().kind != Operand.constant && instList.get(i).isCopiable()) {
 				//remove ssa of temp 
@@ -82,8 +87,11 @@ public class Optimizer {
 	
 	private void replaceAllUse(Operand curOperand, Operand toReplace) {
 		SSA ssa = curOperand.ssa;
+		
 		List<Operand> useChain = ssa.getUseChain();
+		//put uses to remove here to avoid concurrent modification
 		List<Operand> replacedUses = new ArrayList<Operand>();
+		
 		for(Operand use : useChain) {
 			replacedUses.add(use);
 			toReplace.copy(curOperand);

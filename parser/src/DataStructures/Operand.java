@@ -53,24 +53,28 @@ public class Operand{
 		Operand copy = new Operand();
 		copy.kind = this.kind;
 		copy.val = this.val;
+		copy.regno = this.regno;
 		copy.block = this.block;
 		copy.ident = this.ident;
 		copy.ssa = this.ssa;
 		copy.cond = this.cond;
 		copy.inst = this.inst;
 		copy.fixuplocation = this.fixuplocation;
+		copy.arr = this.arr;
 		return copy;
 	}
 	
 	public void copy(Operand target) {
 		target.kind = this.kind;
 		target.val = this.val;
+		target.regno = this.regno;
 		target.block = this.block;
 		target.ident = this.ident;
 		target.ssa = this.ssa;
 		target.cond = this.cond;
 		target.inst = this.inst;
 		target.fixuplocation = this.fixuplocation;
+		target.arr = this.arr;
 	}
 	
 }

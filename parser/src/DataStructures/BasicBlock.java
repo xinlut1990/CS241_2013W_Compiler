@@ -23,7 +23,6 @@ public class BasicBlock {
 	//used in while statement for traversing CFG
 	private BasicBlock backSuccessor = null;
 	
-	
 	private BasicBlock directPredecessor = null;
 	private BasicBlock elsePredecessor = null;
 
@@ -58,14 +57,6 @@ public class BasicBlock {
 		BasicBlock.curId ++;
 		
 		//this.printBlockTrace();
-	}
-	
-	private void printBlockTrace() {
-		System.out.println(this.id);
-		for(int i = 0; i < this.isElses.size(); i++) {
-			System.out.println(this.isElses.get(i));
-		}
-		System.out.println();
 	}
 	
 	public boolean getIsElse(int idx) {
@@ -117,6 +108,22 @@ public class BasicBlock {
 		return this.elseSuccessor;
 	}
 	
+	public BasicBlock getDirectPredecessor() {
+		return directPredecessor;
+	}
+
+	public void setDirectPredecessor(BasicBlock directPredecessor) {
+		this.directPredecessor = directPredecessor;
+	}
+
+	public BasicBlock getElsePredecessor() {
+		return elsePredecessor;
+	}
+
+	public void setElsePredecessor(BasicBlock elsePredecessor) {
+		this.elsePredecessor = elsePredecessor;
+	}
+	
 	public BasicBlock makeDirectSuccessor(boolean isElse) {
 		List<Boolean> isElses = new ArrayList<Boolean>(this.isElses);
 		isElses.add(0, isElse);
@@ -149,6 +156,12 @@ public class BasicBlock {
 				instructions.add(i, insert);
 			}
 		}
+	}
+	
+	public void generateIntermediateCode(int operator, Operand operand1, Operand operand2) {
+		Instruction inst = new Instruction(operator,operand1, operand2);
+		ControlFlowGraph.addInst(inst);
+		this.addInstruction(inst);
 	}
 	
 	public void addInstruction(Instruction inst) {
@@ -205,29 +218,6 @@ public class BasicBlock {
 			}
 			backup2s.set(idx, x.ssa);
 			this.phiFuncs.get(idx).setOperand2(x.copy());
-		}
-	}
-	
-	
-	public void generateIntermediateCode(int operator, Operand operand1, Operand operand2) {
-		Instruction inst = new Instruction(operator,operand1, operand2);
-		ControlFlowGraph.addInst(inst);
-		this.addInstruction(inst);
-	}
-	
-	public int getAddrOfFirstInst() {
-		if(this.instructions.size() == 0) {
-			BasicBlock nextBlock = this;
-			while(nextBlock.instructions.size() == 0) {
-				if(nextBlock.getDirectSuccessor() != null) {
-					nextBlock = nextBlock.getDirectSuccessor();
-				} else {
-					nextBlock = nextBlock.getJoinSuccessor();
-				}
-			}
-			return nextBlock.instructions.get(0).getId();
-		} else {
-			return this.instructions.get(0).getId();
 		}
 	}
 	
@@ -387,50 +377,20 @@ public class BasicBlock {
 		}
 
 	}
-
-	public BasicBlock getDirectPredecessor() {
-		return directPredecessor;
-	}
-
-	public void setDirectPredecessor(BasicBlock directPredecessor) {
-		this.directPredecessor = directPredecessor;
-	}
-
-	public BasicBlock getElsePredecessor() {
-		return elsePredecessor;
-	}
-
-	public void setElsePredecessor(BasicBlock elsePredecessor) {
-		this.elsePredecessor = elsePredecessor;
-	}
 	
-	public Instruction getLastInstruction() {
-		Instruction last = null;
-		if(this.instructions.size() != 0) {
-			last = this.instructions.get(0);
-		}
-		
-		for(Instruction inst: this.instructions) {
-			if(inst.getId() > last.getId()) {
-				last = inst;
-			}
-		}
-		return last;
-	}
-	
+	//put a move instruction to the end of a block before branch
 	public void relocatePhiOperand(Instruction phiOperand) {
-		List<Instruction> predeInsts = this.getInstructions();
-		if(predeInsts.size() != 0) {
-			Instruction lastInst = predeInsts.get(predeInsts.size() - 1);
-			if(lastInst.getOperator() >= Instruction.bra && lastInst.getOperator() <= Instruction.bgt) {
-				predeInsts.add(predeInsts.size() - 1, phiOperand);
+		List<Instruction> instList = this.getInstructions();
+		if(instList.size() != 0) {
+			Instruction lastInst = instList.get(instList.size() - 1);
+			if(lastInst.isBranch()) {
+				instList.add(instList.size() - 1, phiOperand);
 			} else {
-				predeInsts.add(phiOperand);
+				instList.add(phiOperand);
 			}
 		} else {
-			predeInsts.add(phiOperand);
-		}
-		
+			instList.add(phiOperand);
+		}	
 	}
 	
 	public List<SSA> getPhiResults() {
@@ -441,6 +401,7 @@ public class BasicBlock {
 		return results;
 	}
 	
+	//get all the direct branch values from phi functions
 	public List<SSA> getPhiDirects() {
 		List<SSA> directs = new ArrayList<SSA>();
 		for(Instruction phi : this.phiFuncs) {
@@ -449,6 +410,7 @@ public class BasicBlock {
 		return directs;
 	}
 	
+	//get all the else branch values from phi functions
 	public List<SSA> getPhiElses() {
 		List<SSA> elses = new ArrayList<SSA>();
 		for(Instruction phi : this.phiFuncs) {
@@ -456,4 +418,43 @@ public class BasicBlock {
 		}
 		return elses;
 	}
+	
+	//get the id of the first instruction for branch
+	public int getAddrOfFirstInst() {
+		if(this.instructions.size() == 0) {
+			BasicBlock nextBlock = this;
+			while(nextBlock.instructions.size() == 0) {
+				if(nextBlock.getDirectSuccessor() != null) {
+					nextBlock = nextBlock.getDirectSuccessor();
+				} else {
+					nextBlock = nextBlock.getJoinSuccessor();
+				}
+			}
+			return nextBlock.instructions.get(0).getId();
+		} else {
+			return this.instructions.get(0).getId();
+		}
+	}
+	
+	private void printBlockTrace() {
+		System.out.println(this.id);
+		for(int i = 0; i < this.isElses.size(); i++) {
+			System.out.println(this.isElses.get(i));
+		}
+		System.out.println();
+	}
+	
+//	public Instruction getLastInstruction() {
+//	Instruction last = null;
+//	if(this.instructions.size() != 0) {
+//		last = this.instructions.get(0);
+//	}
+//	
+//	for(Instruction inst: this.instructions) {
+//		if(inst.getId() > last.getId()) {
+//			last = inst;
+//		}
+//	}
+//	return last;
+//}
 }

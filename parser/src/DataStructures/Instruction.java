@@ -72,6 +72,10 @@ public class Instruction {
 		Instruction.pc ++;
 	}
 	
+	public boolean isBranch() {
+		return this.getOperator() >= Instruction.bra && this.getOperator() <= Instruction.bgt;
+	}
+	
 	public int getId() {
 		return Id;
 	}
