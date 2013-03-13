@@ -34,7 +34,7 @@ public class Optimizer {
 	}
 	
 	private void copyPropagation() {
-		List<Instruction> instList = ControlFlowGraph.getInstList();
+		List<Instruction> instList = this.cfg.getInstList();
 		for(int i = 0; i < instList.size(); i++) {
 			//get each move instruction
 			if(instList.get(i).getOperator() == Instruction.move && instList.get(i).isCopiable()) {

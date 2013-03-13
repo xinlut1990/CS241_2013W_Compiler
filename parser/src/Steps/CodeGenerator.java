@@ -70,11 +70,15 @@ public class CodeGenerator {
 	private int fp;
 	
 	private ControlFlowGraph cfg = null;
+	public ControlFlowGraph getCfg() {
+		return cfg;
+	}
+
 	public CodeGenerator(RegisterAllocator ra) {
 		this.cfg = ra.getCfg();
 		this.pc = 0;
-		this.buf = new int[ControlFlowGraph.getInstList().size() + 1000];
-		this.fp = ControlFlowGraph.getInstList().size() * WORDLEN;
+		this.buf = new int[cfg.getInstList().size() + 1000];
+		this.fp = cfg.getInstList().size() * WORDLEN;
 		
 	}
 	
@@ -83,7 +87,7 @@ public class CodeGenerator {
 	}
 	
 	public void generateCode() {
-		List<Instruction> instList = ControlFlowGraph.getInstList();
+		List<Instruction> instList = this.cfg.getInstList();
 		PutF1(ADDI, 28, 0, fp);
 		for(int i = 1; i < instList.size(); i ++) {
 			
@@ -291,13 +295,13 @@ public class CodeGenerator {
 	}
 
 	private void PutF1(int op, int a, int b, int c) {
-		System.out.println("instruction " + pc + ": " + op + " "+ a+ " " + b+ " " + c);
+		//System.out.println("instruction " + pc + ": " + op + " "+ a+ " " + b+ " " + c);
 		buf[pc++] = op << 26 | a << 21 | b << 16 | c & 0xffff;
 		
 	}
 	
 	private void PutF2(int op, int a, int b, int c) {
-		System.out.println("instruction " + pc + ": " + op + " "+ a+ " " + b+ " " + c);
+		//System.out.println("instruction " + pc + ": " + op + " "+ a+ " " + b+ " " + c);
 		buf[pc++] = op << 26 | a << 21 | b << 16 | c & 0xffff;
 		
 	}

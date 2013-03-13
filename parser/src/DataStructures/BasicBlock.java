@@ -36,7 +36,6 @@ public class BasicBlock {
 	private List<SSA> backupsBeforeLoop = new ArrayList<SSA>();
 	
 	private boolean isLoop = false;
-	
 
 	public boolean isLoop() {
 		return isLoop;
@@ -154,9 +153,9 @@ public class BasicBlock {
 		}
 	}
 	
-	public void generateIntermediateCode(int operator, Operand operand1, Operand operand2) {
+	public void generateIntermediateCode(ControlFlowGraph cfg, int operator, Operand operand1, Operand operand2) {
 		Instruction inst = new Instruction(operator,operand1, operand2);
-		ControlFlowGraph.addInst(inst);
+		cfg.addInst(inst);
 		this.addInstruction(inst);
 	}
 	
@@ -299,7 +298,7 @@ public class BasicBlock {
 	}
 	
 	//finalize the phi functions of a join block, pass the outer join block to propagate phi function results
-	public void finalizePhiFuncs(List<BasicBlock> joinBlockChain) {
+	public void finalizePhiFuncs(ControlFlowGraph cfg, List<BasicBlock> joinBlockChain) {
 		List<Instruction> phiFunctions = this.getPhiFuncs();
 		for(Instruction phi : phiFunctions) {
 			
@@ -317,20 +316,19 @@ public class BasicBlock {
 	    }
 		if(instructions.size() != 0) {
 			//add finished phi function to instruction list and insert before first instruction of current block
-			ControlFlowGraph.insertInstsBefore(phiFunctions, instructions.get(0));
+			cfg.insertInstsBefore(phiFunctions, instructions.get(0));
 		} else {
-			ControlFlowGraph.addInsts(phiFunctions);
+			cfg.addInsts(phiFunctions);
 		}
 		this.producePhiFuncs();		
 	}
 	
-	public void renameOldUse(int SSABeforeWhile, int SSABeforePhi) {
+	public void renameOldUse(List<Instruction> instList, int SSABeforeWhile, int SSABeforePhi) {
 		for(int i = 0; i < this.backupsBeforeLoop.size(); i ++) {
 			SSA oldDefine = this.backupsBeforeLoop.get(i);
 			List<Operand> useChain = oldDefine.getUseChain();
 			List<Operand> renamedUses = new ArrayList<Operand>();
 			
-			List<Instruction> instList = ControlFlowGraph.getInstList();
 			for(int j = 0; j < instList.size(); j++) {
 				int instId = instList.get(j).getId();
 				if(instId >= SSABeforeWhile && instId < SSABeforePhi) {

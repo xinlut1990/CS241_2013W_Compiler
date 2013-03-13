@@ -217,8 +217,7 @@ public class InterferenceGraph {
 
 	}
 	
-	public void clustering() {
-		List<Instruction> instList = ControlFlowGraph.getInstList();
+	public void clustering(List<Instruction> instList) {
 		//for all phi instructions "x = phi(y1,y2)"
 		for(Instruction inst:instList) {
 			if(inst.getOperator() == Instruction.phi) {

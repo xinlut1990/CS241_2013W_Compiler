@@ -3,176 +3,62 @@ layoutalgorithm: dfs
 manhattan_edges: yes
 smanhattan_edges: yes
 node: {
-title: "0"
-label: "0[
+title: "141"
+label: "141[
 0 : move    ,
-1 : move 0  x_1 R1 ,
-2 : move 0  y_2 R2 ,
-3 : move 0  z_3 R3 ,
-4 : move 0  (4) ,
-5 : move 16  (5) ,
-6 : move 0  c_6 R4 ,
-7 : move 0  x_7 R20 ,
-8 : move 0  y_8 R5 ,
-9 : move 0  z_9 R6 ,
-10 :    [5] ,
-11 :    [1] ,
-12 : move (32) R25  R27 ,
-13 : write   (32) R25 ,
-14 : end    ,
+1 : move 0  a_1 R1 ,
+2 : move 0  b_2 R2 ,
+3 : move 0  c_3 R3 ,
+4 : move 0  d_4 R8 ,
+5 : read (5) R4   ,
+6 : move (5) R4  R27 ,
+7 : write   (5) R4 ,
+8 : wln    ,
+9 : move b_2 R2  b_11 R6 ,
+10 : move c_3 R3  c_10 R7 ,
 ]"
 }
-node: {
-title: "1"
-label: "1[
-15 : move 0  i_15 R17 ,
-16 : move 0  d_16 R18 ,
-17 : move 0  i_17 R19 ,
-18 : move i_17 R19  i_22 R22 ,
-19 : move d_16 R18  d_21 R24 ,
-20 : move x_7 R20  x_20 R1 ,
-21 : move z_9 R6  z_19 R21 ,
-22 : move y_8 R5  y_18 R23 ,
-]"
-}
-edge: { sourcename: "1"
-targetname: "2"
+edge: { sourcename: "141"
+targetname: "142"
 color: blue
 }
 node: {
-title: "2"
-label: "2[
-23 : cmp i_22 R22  10 ,
-24 : bge (23)  [4] ,
+title: "142"
+label: "142[
+11 : cmp b_11 R6  c_10 R7 ,
+12 : ble (11)  [144] ,
 ]"
 }
-edge: { sourcename: "2"
-targetname: "3"
+edge: { sourcename: "142"
+targetname: "143"
 color: blue
 }
-edge: { sourcename: "2"
-targetname: "4"
+edge: { sourcename: "142"
+targetname: "144"
 color: blue
 }
 node: {
-title: "3"
-label: "3[
-25 : add y_18 R23  2 ,
-26 : add x_20 R1  2 ,
-27 : add (25) R23  (26) R21 ,
-28 : add i_22 R22  1 ,
-29 : move [2]  R27 ,
-30 : move x_7 R20  x_20 R1 ,
-31 : bra   [2] ,
+title: "143"
+label: "143[
+13 : read (13) R5   ,
+14 : add c_10 R7  1 ,
+15 : move (13) R5  R27 ,
+16 : write   (13) R5 ,
+17 : wln    ,
+18 : add b_11 R6  1 ,
+19 : move [142]  R27 ,
+20 : move (13) R5  d_9 R8 ,
+21 : bra   [142] ,
 ]"
 }
-edge: { sourcename: "3"
-targetname: "2"
+edge: { sourcename: "143"
+targetname: "142"
 color: blue
 }
 node: {
-title: "4"
-label: "4[
-32 : move d_21 R24  (32) R25 ,
-33 :     ,
-]"
-}
-node: {
-title: "5"
-label: "5[
-34 : move 0  i_34 R7 ,
-35 : move 0  j_35 R8 ,
-36 : move 0  e_36 R9 ,
-37 : move 0  i_37 R10 ,
-38 : move 0  j_38 R11 ,
-39 : move i_37 R10  i_39 R15 ,
-40 : move j_38 R11  j_38 R16 ,
-]"
-}
-edge: { sourcename: "5"
-targetname: "6"
-color: blue
-}
-node: {
-title: "6"
-label: "6[
-41 : cmp i_39 R15  4 ,
-42 : bge (41)  [11] ,
-]"
-}
-edge: { sourcename: "6"
-targetname: "7"
-color: blue
-}
-edge: { sourcename: "6"
-targetname: "11"
-color: blue
-}
-node: {
-title: "7"
-label: "7[
-]"
-}
-edge: { sourcename: "7"
-targetname: "8"
-color: blue
-}
-node: {
-title: "8"
-label: "8[
-43 : cmp j_42 R16  4 ,
-44 : bge (43)  [10] ,
-]"
-}
-edge: { sourcename: "8"
-targetname: "9"
-color: blue
-}
-edge: { sourcename: "8"
-targetname: "10"
-color: blue
-}
-node: {
-title: "9"
-label: "9[
-45 : mul j_42 R16  4 ,
-46 : add 0  (45) R2 ,
-47 : mul i_39 R15  16 ,
-48 : add (46) R2  (47) R3 ,
-49 : add R28  (5) ,
-50 : adda (48) R2  (49) R3 ,
-51 : store j_42 R16  (50) ,
-52 : add j_42 R16  1 ,
-53 : move [8]  R27 ,
-54 : move (52) R13  j_42 R16 ,
-55 : bra   [8] ,
-]"
-}
-edge: { sourcename: "9"
-targetname: "8"
-color: blue
-}
-node: {
-title: "10"
-label: "10[
-56 : mul i_39 R15  4 ,
-57 : add 0  (56) R2 ,
-58 : add R28  (4) ,
-59 : adda (57) R2  (58) R3 ,
-60 : store i_39 R15  (59) ,
-61 : add i_39 R15  1 ,
-62 : move [6]  R27 ,
-63 : bra   [6] ,
-]"
-}
-edge: { sourcename: "10"
-targetname: "6"
-color: blue
-}
-node: {
-title: "11"
-label: "11[
-64 :     ,
+title: "144"
+label: "144[
+22 : end    ,
 ]"
 }
 }

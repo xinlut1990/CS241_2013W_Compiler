@@ -29,7 +29,11 @@ public class Parser {
 	
 	public Parser(Scanner sc) {
 		this.scanner = sc;
-		this.icGen = new IntermCodeGenerator(this.scanner);
+		
+		//build a new control flow graph
+		cfg = new ControlFlowGraph(scanner);
+		
+		this.icGen = new IntermCodeGenerator(this.scanner, this.cfg);
 		this.next();
 		
 		//operator code of computational tokens
@@ -273,7 +277,7 @@ public class Parser {
 					
 					if(curFunc != null) {
 						//assign argument to parameter
-						curBB.generateIntermediateCode(Instruction.move, argument, curFunc.getParamAt(paramIdx));
+						curBB.generateIntermediateCode(this.cfg, Instruction.move, argument, curFunc.getParamAt(paramIdx));
 					}
 					
 					paramIdx ++;
@@ -286,7 +290,7 @@ public class Parser {
 						if(curFunc != null) {
 							//assign argument to parameter
 							//assign(curBB, joinBlockChain, argument, curFunc.getParamAt(paramIdx));
-							curBB.generateIntermediateCode(Instruction.move, argument, curFunc.getParamAt(paramIdx));
+							curBB.generateIntermediateCode(this.cfg, Instruction.move, argument, curFunc.getParamAt(paramIdx));
 						}
 						paramIdx ++;
 					}
@@ -304,17 +308,17 @@ public class Parser {
 				Operand input = Operand.makeVar(TEMP);
 				
 				VariableManager.addAssignment(Instruction.getPC(), input);	
-				curBB.generateIntermediateCode(Instruction.read, input, null);
+				curBB.generateIntermediateCode(this.cfg, Instruction.read, input, null);
 				return input;
 				
 			} else if (functionIdent == 1) {//outputNum
 				Operand argu = arguments.get(0);
-				curBB.generateIntermediateCode(Instruction.write, null, argu);
+				curBB.generateIntermediateCode(this.cfg, Instruction.write, null, argu);
 				return null;
 				
 			} else if (functionIdent == 2) {//outputNewLine
 				
-				curBB.generateIntermediateCode(Instruction.wln, null, null);
+				curBB.generateIntermediateCode(this.cfg, Instruction.wln, null, null);
 				return null;
 				
 			} else{
@@ -445,7 +449,7 @@ public class Parser {
 		}
 		
 		Operand branch = Operand.makeBranch(curBB);
-		doLastBlock.generateIntermediateCode(Instruction.bra, null, branch);
+		doLastBlock.generateIntermediateCode(this.cfg, Instruction.bra, null, branch);
 		
 		//link loop block back to condition
 		doLastBlock.setBackSuccessor(curBB);
@@ -461,8 +465,8 @@ public class Parser {
 			int SSABeforePhi = Instruction.getPC();
 			//TODO: bug
 
-			curBB.finalizePhiFuncs(joinBlockChain);
-			curBB.renameOldUse(SSABeforeWhile, SSABeforePhi);
+			curBB.finalizePhiFuncs(this.cfg, joinBlockChain);
+			curBB.renameOldUse(this.cfg.getInstList(), SSABeforeWhile, SSABeforePhi);
 			return followBlock;
 		}
 		else {
@@ -506,7 +510,7 @@ public class Parser {
 			
 			//the last(join) block of the if-statement
 			BasicBlock lastBlock = this.ifStatement(curBB, new ArrayList<BasicBlock>(joinBlockChain), func);
-			lastBlock.finalizePhiFuncs(joinBlockChain);
+			lastBlock.finalizePhiFuncs(this.cfg, joinBlockChain);
 			return lastBlock;
 			
 		} else if(scannerSym == Token.whileToken) {
@@ -692,7 +696,7 @@ public class Parser {
 			//empty statement sequence
 			if(scannerSym != Token.endToken) {
 				BasicBlock lastBlock = statSequence(func.getBlock(), new ArrayList<BasicBlock>(), func);
-				lastBlock.generateIntermediateCode(Instruction.retrn, null, null);
+				lastBlock.generateIntermediateCode(this.cfg, Instruction.retrn, null, null);
 			}
 			if(scannerSym == Token.endToken) {
 				this.next();
@@ -708,9 +712,6 @@ public class Parser {
 		if(scannerSym == Token.mainToken) {
 			
 			this.next();
-			
-			//build a new control flow graph
-			cfg = new ControlFlowGraph(scanner);
 
 			while(scannerSym == Token.varToken || scannerSym == Token.arrToken) {
 				varDecl(cfg.getFirstBlock(), null);
@@ -727,7 +728,7 @@ public class Parser {
 					if(scannerSym == Token.periodToken) {
 						this.next();
 						//parsing ends
-						lastBlock.generateIntermediateCode(Instruction.end, null, null);
+						lastBlock.generateIntermediateCode(this.cfg, Instruction.end, null, null);
 						System.out.println("Parsing is over.");
 					}
 					else {

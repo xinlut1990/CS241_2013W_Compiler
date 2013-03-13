@@ -30,7 +30,7 @@ public class RegisterAllocator {
 	
 	public void RegisterAllocate() {
 		//rearrange the order of instructions
-		List<Instruction> instList = ControlFlowGraph.getInstList();
+		List<Instruction> instList = this.cfg.getInstList();
 		
 		//instruction for initialization of program environment
 		this.cfg.getFirstBlock().getInstructions().add(0, new Instruction(Instruction.move, null, null));
@@ -56,7 +56,7 @@ public class RegisterAllocator {
 		ig.buildIG(this.cfg);
 		//ig.printGraph();
 		//this.cfg.printCFG();		
-		ig.clustering();
+		ig.clustering(this.cfg.getInstList());
 		ig.color();
 
 		//synchronize for operands
@@ -81,7 +81,7 @@ public class RegisterAllocator {
 	}
 	
 	private void resolvePhiConflict() {
-		List<Instruction> instList = ControlFlowGraph.getInstList();
+		List<Instruction> instList = this.cfg.getInstList();
 		for(int i = instList.size() - 1; i >= 0; i --) {
 			if(instList.get(i).getOperator() == Instruction.phi) {
 				SSA phiSSA = VariableManager.getSSAByVersion(instList.get(i).getId());

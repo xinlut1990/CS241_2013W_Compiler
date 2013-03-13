@@ -108,6 +108,10 @@ public class test {
 				CodeGenerator cg = new CodeGenerator(ra);
 				cg.generateCode();
 				
+				VariableManager.reset();
+				cg.getCfg().reset();
+				Instruction.reset();
+				
 				DLX.load(cg.getProgram());
 				//DLX.load(cg.getProgram());
 			} catch (Exception e) {
@@ -129,9 +133,7 @@ public class test {
 				System.exit(0);
 			}
 			
-			VariableManager.reset();
-			ControlFlowGraph.reset();
-			Instruction.reset();
+
 		}
 
 		

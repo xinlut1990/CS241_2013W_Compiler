@@ -21,7 +21,7 @@ public class ControlFlowGraph {
 
 	private VCGPrinter vcgPrinter;
 	//intermediate instruction list of the program
-	private static List<Instruction> instList = new ArrayList<Instruction>();
+	private List<Instruction> instList = new ArrayList<Instruction>();
 	
 	public ControlFlowGraph(Scanner scanner) {
 		
@@ -33,7 +33,7 @@ public class ControlFlowGraph {
 		this.vcgPrinter.printCFG();
 	}
 	
-	public static void reset() {
+	public void reset() {
 		BBList = new ArrayList<BasicBlock>();
 		instList = new ArrayList<Instruction>();
 	}
@@ -42,15 +42,15 @@ public class ControlFlowGraph {
 		return BBList;
 	}
 	
-	public static void addInsts(List<Instruction> inst) {
+	public void addInsts(List<Instruction> inst) {
 		instList.addAll(inst);
 	}
 	
-	public static void addInst(Instruction inst) {
+	public void addInst(Instruction inst) {
 		instList.add(inst);
 	}
 	
-	public static List<Instruction> getInstList() {
+	public List<Instruction> getInstList() {
 		return instList;
 	}
 	
@@ -106,7 +106,6 @@ public class ControlFlowGraph {
 	
 	private void rearrangeInstructions() {
 		
-		List<Instruction> instList = ControlFlowGraph.getInstList();
 		List<Integer> oldVersions = new ArrayList<Integer>();
 		
 		for(int i = 0; i < instList.size(); i++) {
@@ -159,7 +158,7 @@ public class ControlFlowGraph {
 		return null;
 	}
 	
-	public static void insertInstsBefore(List<Instruction> insts, Instruction before) {
+	public void insertInstsBefore(List<Instruction> insts, Instruction before) {
 		for(int i = instList.size() - 1; i >= 0; i--) {
 			if(instList.get(i) == before) {
 				instList.addAll(i, insts);
