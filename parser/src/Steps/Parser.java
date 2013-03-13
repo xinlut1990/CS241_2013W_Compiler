@@ -11,7 +11,6 @@ import DataStructures.Function;
 import DataStructures.Instruction;
 import DataStructures.IntermCodeGenerator;
 import DataStructures.Operand;
-import DataStructures.SSA;
 import DataStructures.VariableManager;
 
 import cs241_compiler.Token;
@@ -61,10 +60,10 @@ public class Parser {
 	//get the identifier of variable
 	private Operand ident() {
 		
-		Operand x = new Operand();
-		x.ident = this.scanner.getId();
+		Operand identifier = new Operand();
+		identifier.ident = this.scanner.getId();
 		this.next();
-		return x;
+		return identifier;
 	}
 	
 	private Operand designator(BasicBlock curBB, List<BasicBlock> joinBlockChain, Function func, boolean isAssign) {
@@ -123,16 +122,17 @@ public class Parser {
 	}
 	
 	private Operand factor(BasicBlock curBB, List<BasicBlock> joinBlockChain, Function func) {
-		Operand x = null;
+		
 		if(scannerSym == Token.number) { //number
-			
-			x = Operand.makeConst(scanner.getVal());
+			int constVal = scanner.getVal();
 			this.next();
 			
+			return Operand.makeConst(constVal);
+
 		} else if(scannerSym == Token.openparenToken) { //(expression)
-			
 			this.next();
-			x = this.expression(curBB, joinBlockChain, func);
+			
+			Operand expResult = this.expression(curBB, joinBlockChain, func);
 			
 			if(scannerSym == Token.closeparenToken) { 
 				this.next();
@@ -141,21 +141,23 @@ public class Parser {
 				printError("no \")\" after \"(\"");
 			}
 			
+			return expResult;
+			
 		} else if(scannerSym == Token.callToken) { //funcCall
 			
-			x = this.funcCall(curBB, joinBlockChain, func);
+			return this.funcCall(curBB, joinBlockChain, func);
 			
 		} else if(scannerSym == Token.identifier) {
 			
-			x = this.designator(curBB, joinBlockChain, func, false);
+			Operand designator = this.designator(curBB, joinBlockChain, func, false);
 			
-			x = icGen.parseUse(curBB, x, joinBlockChain, func);
+			return icGen.parseUse(curBB, designator, joinBlockChain, func);
 			
 		} else {
 			//error
 			printError("not valid factor.");
+			return null;
 		}
-		return x;
 	}
 	
 	private Operand term(BasicBlock curBB, List<BasicBlock> joinBlockChain, Function func) {
@@ -175,7 +177,9 @@ public class Parser {
 	private Operand expression(BasicBlock curBB, List<BasicBlock> joinBlockChain, Function func) {
 		Operand x, y;
 		int op;
+		
 		x = this.term(curBB, joinBlockChain, func);
+		
 		while(scannerSym == Token.plusToken || scannerSym == Token.minusToken){
 			op = scannerSym;
 			this.next();
@@ -183,6 +187,7 @@ public class Parser {
 			y = this.term(curBB, joinBlockChain, func);
 			x = icGen.compute(curBB, opCode[op], x, y);
 		} 
+		
 		return x;
 	}
 	

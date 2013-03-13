@@ -1,7 +1,6 @@
 package cs241_compiler;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 
 import Steps.CodeGenerator;
 import Steps.Optimizer;
@@ -17,7 +16,7 @@ public final class Compiler {
 	
 	public static void main(String[] args) {
 		
-		Scanner sc = new Scanner(new File("testprogs/test024.txt"));
+		Scanner sc = new Scanner(new File("testprogs/test002.txt"));
 		
 		Parser ps = new Parser(sc);
 		ps.parse();

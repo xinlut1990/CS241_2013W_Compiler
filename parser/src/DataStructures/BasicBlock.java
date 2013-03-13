@@ -6,13 +6,9 @@ import java.util.List;
 
 public class BasicBlock {
 	
-	private static final int normal = 1;
-	private static final int follow = 1;
-	private static final int join = 1;
 	private static int curId = 0;
 	private final int id;
 	private List<Boolean> isElses = new ArrayList<Boolean>();
-	private int type;
 	
 	private List<BasicBlock> dominatedBlocks = new ArrayList<BasicBlock>();
 

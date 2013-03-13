@@ -1,11 +1,9 @@
 package Steps;
 
-import java.util.ArrayList;
 import java.util.List;
 
 
 import DataStructures.BasicBlock;
-import DataStructures.Cluster;
 import DataStructures.ControlFlowGraph;
 import DataStructures.Instruction;
 import DataStructures.InterferenceGraph;

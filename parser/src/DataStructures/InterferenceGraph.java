@@ -47,13 +47,6 @@ public class InterferenceGraph {
 		return null;
 	}
 	
-	private void initLiveness(Set<SSA> live, BasicBlock curBB) {
-		List<Instruction> instList = curBB.getInstructions();
-		//only for the last instruction of the program
-		Instruction lastInst = instList.get(instList.size()-1);
-		live.add(VariableManager.getSSAByVersion(lastInst.getId()));
-	}
-	
 	public void buildIG(ControlFlowGraph cfg) {
 		BasicBlock curBB = null;
 		Set<SSA> live = new HashSet<SSA>();

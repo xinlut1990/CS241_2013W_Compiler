@@ -1,8 +1,5 @@
 package DataStructures;
 
-import java.util.ArrayList;
-import java.util.List;
-
 
 //data structure of intermediate instruction
 public class Instruction {
