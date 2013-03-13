@@ -149,7 +149,7 @@ public class Parser {
 			
 			x = this.designator(curBB, joinBlockChain, func, false);
 			
-			icGen.parseUse(curBB, x, joinBlockChain, func);
+			x = icGen.parseUse(curBB, x, joinBlockChain, func);
 			
 		} else {
 			//error
@@ -303,8 +303,8 @@ public class Parser {
 				return input;
 				
 			} else if (functionIdent == 1) {//outputNum
-				
-				curBB.generateIntermediateCode(Instruction.write, null, arguments.get(0));
+				Operand argu = arguments.get(0);
+				curBB.generateIntermediateCode(Instruction.write, null, argu);
 				return null;
 				
 			} else if (functionIdent == 2) {//outputNewLine

@@ -151,6 +151,11 @@ public class CodeGenerator {
 				break;
 			case Instruction.load:
 				a = VariableManager.getTempRegIn(instId);
+				if(operand2 != null && operand2.kind == Operand.reg) {
+					a = operand2.regno;
+				} else {
+					a = VariableManager.getTempRegIn(instId);
+				}
 				if(operand1.kind == Operand.constant) {
 					c = operand1.val;
 					PutF1(LDW, a, b, c);
@@ -161,8 +166,13 @@ public class CodeGenerator {
 				break;
 			case Instruction.store:
 				a = operand1.regno;
-				b = operand2.regno;
-				PutF1(STW, a, b, c);
+				if(operand2.kind == Operand.constant) {
+					c = operand1.val;
+					PutF1(STW, a, b, c);
+				} else {
+					b = operand2.regno;
+					PutF1(STW, a, b, c);
+				}
 				break;
 			case Instruction.push:
 				PutF1(PSH, (pc + 2) * WORDLEN, 29, WORDLEN);
@@ -221,6 +231,11 @@ public class CodeGenerator {
 			c = operand1.block.getAddrOfFirstInst() * WORDLEN;
 			if(a != 0) {
 				PutF1(ADDI, a, b, c);
+			}
+		} else {
+			c = operand1.val;
+			if(a != 0) {
+				PutF1(ADD, a, b, c);
 			}
 		}
 	}

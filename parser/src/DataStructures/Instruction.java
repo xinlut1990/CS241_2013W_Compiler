@@ -50,6 +50,10 @@ public class Instruction {
 		pc = 0;
 	}
 	
+	public Instruction() {
+		
+	}
+	
 	public Instruction(int op, Operand operand1, Operand operand2){
 		this.operator = op;
 		this.operand1 = operand1;
@@ -72,8 +76,30 @@ public class Instruction {
 		Instruction.pc ++;
 	}
 	
+	public static Instruction noUseInstruction(int op, Operand operand1, Operand operand2){
+		Instruction inst = new Instruction();
+		inst.operator = op;
+		inst.operand1 = operand1;
+		inst.operand2 = operand2;
+		//The id of a new instruction is the current value of program counter.
+		inst.Id = pc;
+		if(operand1 != null) {
+			inst.operand1.inst = inst.getId();
+		}
+		
+		if(operand2 != null) {
+			inst.operand2.inst = inst.getId();
+		}
+		Instruction.pc ++;
+		return inst;
+	}
+	
 	public boolean isBranch() {
 		return this.getOperator() >= Instruction.bra && this.getOperator() <= Instruction.bgt;
+	}
+	
+	public boolean isComputational() {
+		return this.getOperator() >= Instruction.add && this.getOperator() <= Instruction.adda;
 	}
 	
 	public int getId() {

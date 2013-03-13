@@ -436,6 +436,11 @@ public class BasicBlock {
 		}
 	}
 	
+	public void replaceInst(Instruction toBeReplaced, Instruction toReplace) {
+		int idx = this.instructions.indexOf(toBeReplaced);
+		this.instructions.set(idx, toReplace);
+	}
+	
 	private void printBlockTrace() {
 		System.out.println(this.id);
 		for(int i = 0; i < this.isElses.size(); i++) {

@@ -17,7 +17,7 @@ public final class Compiler {
 	
 	public static void main(String[] args) {
 		
-		Scanner sc = new Scanner(new File("testprogs/test002.txt"));
+		Scanner sc = new Scanner(new File("testprogs/test024.txt"));
 		
 		Parser ps = new Parser(sc);
 		ps.parse();

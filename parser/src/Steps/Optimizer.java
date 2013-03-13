@@ -1,7 +1,9 @@
 package Steps;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 
 import DataStructures.BasicBlock;
@@ -25,8 +27,9 @@ public class Optimizer {
 	}
 	
 	public void optimize() {
+		//this.cfg.printDominatorTree();
 		copyPropagation();
-		//commonSubexpressionElimination();
+		commonSubexpressionElimination();
 		//this.cfg.printCFG();
 	}
 	
@@ -106,20 +109,93 @@ public class Optimizer {
 	
 	// eliminate same expression
 	private void commonSubexpressionElimination() {
-		//In-block CSE 
+		this.localCSE();
+		//this.globalCSE();
+	}
+	
+	private void localCSE() {
+		//local CSE 
 		for(BasicBlock curBB : ControlFlowGraph.getBBList()) {
-			List<Instruction> insts = curBB.getInstructions();
-			for(int i = insts.size() - 1; i >= 0; i--) {
-				for(int j = insts.size() - 1; j >= i + 1; j--) {
-					Instruction instI = insts.get(i);
-					Instruction instJ = insts.get(j);
-					if(instI.getOperator() == instJ.getOperator() 
-							&& instI.getOperand1().ssa == instJ.getOperand1().ssa
-							&& instI.getOperand2().ssa == instJ.getOperand2().ssa) {
-						insts.remove(instJ);
+			List<Instruction> instList = curBB.getInstructions();
+			for(int i = instList.size() - 1; i >= 0; i--) {
+				for(int j = instList.size() - 1; j > i; j--) {
+					Instruction instI = instList.get(i);
+					Instruction instJ = instList.get(j);
+					//eliminate
+					if(this.isIdentical(instI, instJ)) {
+						instList.remove(instJ);
+						SSA tempToBeReplaced = VariableManager.getSSAByVersion(instJ.getId());
+						SSA tempToReplace = VariableManager.getSSAByVersion(instI.getId());
+						tempToBeReplaced.replaceAllUse(tempToReplace);
 					}
 				}
 			}
 		}
 	}
+	
+	private boolean isIdentical(Instruction instI, Instruction instJ) {
+		if(instI.getOperator() == instJ.getOperator() && instI.isComputational()) {
+			boolean op1equal = false;
+			if(instI.getOperand1().kind == Operand.constant && instJ.getOperand1().kind == Operand.constant) {
+				if(instI.getOperand1().val == instJ.getOperand1().val) {
+					op1equal = true;
+				}
+			} else if(instI.getOperand1().kind == Operand.var && instJ.getOperand1().kind == Operand.var) {
+				if(instI.getOperand1().ssa == instJ.getOperand1().ssa) {
+					op1equal = true;
+				}
+			}
+			
+			boolean op2equal = false;
+			if(instI.getOperand2().kind == Operand.constant && instJ.getOperand2().kind == Operand.constant) {
+				if(instI.getOperand2().val == instJ.getOperand2().val) {
+					op2equal = true;
+				}
+			} else if(instI.getOperand2().kind == Operand.var && instJ.getOperand2().kind == Operand.var) {
+				if(instI.getOperand2().ssa == instJ.getOperand2().ssa) {
+					op2equal = true;
+				}
+			}
+			
+			if(op1equal && op2equal) {
+				return true;
+			} else {
+				return false;
+			}
+		} else {
+			return false;
+		}
+	}
+	
+	private void globalCSE() {
+		this.globalCSERecursive(this.cfg.getFirstBlock());
+	}
+	
+	private Set<BasicBlock> globalCSERecursive(BasicBlock curBB) {
+		//all blocks dominated by current block and current block itself
+		Set<BasicBlock> subTree = new HashSet<BasicBlock>();
+		for(BasicBlock bb : curBB.getDominatedBlocks()) {
+			subTree.addAll(globalCSERecursive(bb));
+		}
+		for(BasicBlock dominatedBlock : subTree) {
+			List<Instruction> instListI = curBB.getInstructions();
+			List<Instruction> instListJ = dominatedBlock.getInstructions();
+			for(int i = instListI.size() - 1; i >= 0; i--) {
+				for(int j = instListJ.size() - 1; j >= 0; j--) {
+					Instruction instI = instListI.get(i);
+					Instruction instJ = instListJ.get(j);
+					//eliminate
+					if(this.isIdentical(instI, instJ)) {
+						instListJ.remove(instJ);
+						SSA tempToBeReplaced = VariableManager.getSSAByVersion(instJ.getId());
+						SSA tempToReplace = VariableManager.getSSAByVersion(instI.getId());
+						tempToBeReplaced.replaceAllUse(tempToReplace);
+					}
+				}
+			}
+		}
+		subTree.add(curBB);
+		return subTree;
+	}
+	
 }

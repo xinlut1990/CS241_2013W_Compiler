@@ -7,6 +7,7 @@ import java.util.Set;
 
 public class InterferenceGraph {
 	private List<Cluster> clusters = new ArrayList<Cluster>();
+	private static int spillMemory = 2000;
 	
 	public List<Cluster> getClusters() {
 		return clusters;
@@ -17,6 +18,13 @@ public class InterferenceGraph {
 			if(cluster.getNeighborNum() < regLimit) {
 				return cluster;
 			}
+		}
+		return null;
+	}
+	
+	public Cluster getArbitraryCluster() {
+		for(Cluster cluster : clusters) {
+				return cluster;
 		}
 		return null;
 	}
@@ -150,12 +158,7 @@ public class InterferenceGraph {
 			//if recursion reaches a normal block
 			Set<SSA> liveInitial = buildIGFromBlock(curBB, liveLast);
 			return liveInitial;
-//			if(curBB.getDirectSuccessor() != null) {
-//				buildIGRecursive(curBB.getDirectSuccessor());
-//			}
-//			if(curBB.getElseSuccessor() != null) {
-//				buildIGRecursive(curBB.getElseSuccessor());
-//			}
+
 		}
 		
 	}
@@ -267,7 +270,14 @@ public class InterferenceGraph {
 		//get an arbitrary node x with fewer than N neighbors
 		Cluster x = this.getArbitraryCluster(25);
 		//remove x along with attached edges from G
-		this.deleteCluster(x);
+		if(x != null) {
+			this.deleteCluster(x);
+		} else {
+			//System.out.println("need to spill");
+			x = this.getArbitraryCluster();
+			this.deleteCluster(x);
+		}
+		
 		//if G not empty color(remaining G)
 		if(!this.clusters.isEmpty()) {
 			color();
@@ -291,7 +301,39 @@ public class InterferenceGraph {
 			}
 		}
 		if(!regAssigned) {
-			System.out.println("spilled");
+			//insert store code
+			for(int i = 0; i < x.getSSAList().size(); i ++) {
+				Instruction assignInst = ControlFlowGraph.getInstruction(x.getSSAList().get(i).getVersion());
+				BasicBlock blockOfAssign = ControlFlowGraph.findBlockOf(assignInst);
+				
+				Operand storeAddr = Operand.makeConst(spillMemory);
+				Instruction store = Instruction.noUseInstruction(Instruction.store, assignInst.getOperand1(), storeAddr);
+				store.setId(assignInst.getId());
+				blockOfAssign.replaceInst(assignInst, store);
+				
+				for(Operand use: x.getSSAList().get(i).getUseChain()) {
+					Instruction useInst = ControlFlowGraph.getInstruction(use.inst);
+					if(useInst != null && use.inst != x.getSSAList().get(i).getVersion()) {
+						BasicBlock blockOfUse = ControlFlowGraph.findBlockOf(useInst);
+						
+						Operand loadAddr = Operand.makeConst(spillMemory);
+						Operand loadTemp = Operand.makeReg(26);
+						Instruction load = Instruction.noUseInstruction(Instruction.load, loadAddr, loadTemp);
+						blockOfUse.insertBefore(useInst, load);
+						if(useInst.getOperand1() != null && useInst.getOperand1().ssa == x.getSSAList().get(i)) {
+							useInst.setOperand1(loadTemp);
+						}
+						if(useInst.getOperand2() != null && useInst.getOperand2().ssa == x.getSSAList().get(i)) {
+							useInst.setOperand2(loadTemp);
+						}
+					}
+					
+				}
+			}
+
+			//out.println(x.getSSA().getIdentifier()+"spilled");
+			
+			spillMemory += 4;
 		}
 		
 	}

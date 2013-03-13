@@ -131,11 +131,22 @@ public class ControlFlowGraph {
 		}
 	}
 	
-	public BasicBlock findBlockOf(Instruction inst) {
+	public static BasicBlock findBlockOf(Instruction inst) {
 		for(BasicBlock bb : BBList) {
 			for(Instruction curInst : bb.getInstructions()) {
 				if(curInst == inst) {
 					return bb;
+				}
+			}
+		}
+		return null;
+	}
+	
+	public static Instruction getInstruction(int id) {
+		for(BasicBlock bb : BBList) {
+			for(Instruction curInst : bb.getInstructions()) {
+				if(curInst.getId() == id) {
+					return curInst;
 				}
 			}
 		}

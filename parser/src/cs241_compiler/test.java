@@ -88,6 +88,10 @@ public class test {
 	
 	public static void main(String[] args) {
 		for(int i = 1; i < 32; i++) {
+			//test programs with dead loops
+			if(i == 8 || i == 10 || i == 11 || i == 16 || i == 22 || i == 24 || i == 25) {
+				continue;
+			}
 			String testName = "testprogs/test" + String.format("%03d", i) + ".txt";
 			Scanner sc = new Scanner(new File(testName));
 			System.out.println(testName);
@@ -104,6 +108,7 @@ public class test {
 				CodeGenerator cg = new CodeGenerator(ra);
 				cg.generateCode();
 				
+				DLX.load(cg.getProgram());
 				//DLX.load(cg.getProgram());
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
@@ -111,18 +116,18 @@ public class test {
 				System.exit(0);
 			}
 
-//			try {
-//				DLX.execute();
-//				System.out.println("Test " + i + " passed.");
-//				switch(i) {
-//				case 12:
-//					System.out.println("Output should be 3.");
-//				}
-//			} catch (IOException e) {
-//				// TODO Auto-generated catch block
-//				e.printStackTrace();
-//				System.exit(0);
-//			}
+			try {
+				DLX.execute();
+				System.out.println("Test " + i + " passed.");
+				switch(i) {
+				case 12:
+					System.out.println("Output should be 3.");
+				}
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				System.exit(0);
+			}
 			
 			VariableManager.reset();
 			ControlFlowGraph.reset();

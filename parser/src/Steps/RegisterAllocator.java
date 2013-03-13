@@ -45,7 +45,7 @@ public class RegisterAllocator {
 			if(instList.get(i).getOperator() == Instruction.bra || instList.get(i).getOperator() == Instruction.write) {
 				Operand branchReg = Operand.makeReg(27);
 				Instruction move = new Instruction(Instruction.move, instList.get(i).getOperand2(), branchReg);
-				BasicBlock blockOfBranch = this.cfg.findBlockOf(instList.get(i));
+				BasicBlock blockOfBranch = ControlFlowGraph.findBlockOf(instList.get(i));
 				blockOfBranch.insertBefore(instList.get(i), move);
 			}
 		}
@@ -72,7 +72,8 @@ public class RegisterAllocator {
 			}
 
 		}
-		this.cfg.printCFG();
+		this.cfg.updateInstList();
+		//this.cfg.printCFG();
 		this.resolvePhiConflict();
 		
 		this.cfg.updateInstList();
@@ -91,7 +92,7 @@ public class RegisterAllocator {
 				phiOperand.ssa = phiSSA;
 				phiOperand.regno = phiSSA.getReg();
 				
-				BasicBlock blockOfPhi = this.cfg.findBlockOf(instList.get(i));
+				BasicBlock blockOfPhi = ControlFlowGraph.findBlockOf(instList.get(i));
 				//eliminate phi
 				blockOfPhi.getInstructions().remove(instList.get(i));
 				

@@ -15,9 +15,6 @@ public class SSA {
 	
 	//define-use chain
 	private List<Operand> useChain = new ArrayList<Operand>();
-	//live range
-	private int deadPos = 0;
-	private int bornPos = 0;
 	
 	private boolean isParam = false;
 	
@@ -27,14 +24,6 @@ public class SSA {
 
 	public void setParam(boolean isParam) {
 		this.isParam = isParam;
-	}
-
-	public int getBornPos() {
-		return bornPos;
-	}
-
-	public void setBornPos(int bornPos) {
-		this.bornPos = bornPos;
 	}
 
 	public int getReg() {
@@ -64,6 +53,16 @@ public class SSA {
 		this.useChain.remove(x);
 	}
 	
+	public void replaceAllUse(SSA toReplace) {
+		for(Operand use : this.useChain) {
+			if(use.kind == Operand.var) {
+				use.ssa = toReplace;
+			} else {
+				System.out.println("CSE error!");
+			}
+		}
+	}
+	
 	public int getVersion() {
 		return version;
 	}
@@ -81,14 +80,6 @@ public class SSA {
 	}
 	public void setIdentifier(int identifier) {
 		this.identifier = identifier;
-	}
-
-	public int getDeadPos() {
-		return deadPos;
-	}
-
-	public void setDeadPos(int deadPos) {
-		this.deadPos = deadPos;
 	}
 
 }
