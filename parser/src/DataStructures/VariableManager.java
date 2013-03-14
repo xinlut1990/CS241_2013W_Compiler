@@ -20,6 +20,7 @@ public class VariableManager {
 		SSAList = new ArrayList<SSA>();
 		constAssignments = new HashMap<Integer, SSA>();
 	}
+	
 	public static int getTempRegIn(int instId) {
 		for(SSA SSA : SSAList) {
 			if(SSA.getVersion() == instId) {

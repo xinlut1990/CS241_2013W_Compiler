@@ -460,13 +460,13 @@ public class Parser {
 		
 		if( scannerSym == Token.odToken) {
 			this.next();
-			curBB.fixLoopBackup();
+			curBB.getPhiManager().fixLoopBackup();
 			//int SSABeforePhi = VariableManager.getLastSSAPosition();
 			int SSABeforePhi = Instruction.getPC();
 			//TODO: bug
 
 			curBB.finalizePhiFuncs(this.cfg, joinBlockChain);
-			curBB.renameOldUse(this.cfg.getInstList(), SSABeforeWhile, SSABeforePhi);
+			curBB.getPhiManager().renameOldUse(this.cfg.getInstList(), SSABeforeWhile, SSABeforePhi);
 			return followBlock;
 		}
 		else {

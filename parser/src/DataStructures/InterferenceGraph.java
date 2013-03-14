@@ -68,7 +68,7 @@ public class InterferenceGraph {
 			BasicBlock joinBlock = curBB.getJoinSuccessor();
 			Set<SSA> liveJoin = buildIGRecursive(curBB.getJoinSuccessor(), liveLast);
 			
-			for(SSA result : joinBlock.getPhiResults()) {
+			for(SSA result : joinBlock.getPhiManager().getPhiResults()) {
 				liveJoin.remove(result);
 				Cluster resultCluster = this.getCluster(result);
 				for(SSA x : liveJoin) {
@@ -83,14 +83,14 @@ public class InterferenceGraph {
 			if(curBB.getElseSuccessor() != curBB.getJoinSuccessor()) {
 				Set<SSA> liveElseLast = new HashSet<SSA>();
 				liveElseLast.addAll(liveJoin);
-				liveElseLast.addAll(joinBlock.getPhiElses());
+				liveElseLast.addAll(joinBlock.getPhiManager().getPhiElses());
 				liveElseInitial = buildIGRecursive(curBB.getElseSuccessor(), liveElseLast);
 			}
 			
 			//liveness before the if block
 			Set<SSA> liveDirectLast = liveJoin;
 			liveDirectLast.addAll(liveJoin);
-			liveDirectLast.addAll(joinBlock.getPhiDirects());
+			liveDirectLast.addAll(joinBlock.getPhiManager().getPhiDirects());
 			Set<SSA> liveDirectInitial = buildIGRecursive(curBB.getDirectSuccessor(), liveDirectLast);
 			
 			//merge liveDirect and liveELse
@@ -110,7 +110,7 @@ public class InterferenceGraph {
 			//liveness before the loop head
 			Set<SSA> liveLoopHead = buildIGFromBlock(loopHead, new HashSet<SSA>(liveFollow));
 			
-			for(SSA result : loopHead.getPhiResults()) {
+			for(SSA result : loopHead.getPhiManager().getPhiResults()) {
 				liveLoopHead.remove(result);
 				Cluster resultCluster = this.getCluster(result);
 				for(SSA x : liveLoopHead) {
@@ -122,7 +122,7 @@ public class InterferenceGraph {
 			
 			//liveness at the end of loop body
 			Set<SSA> liveLoopBodyLast = liveLoopHead;
-			liveLoopBodyLast.addAll(loopHead.getPhiDirects());
+			liveLoopBodyLast.addAll(loopHead.getPhiManager().getPhiDirects());
 			Set<SSA> liveLoopBodyInitial = buildIGRecursive(loopHead.getDirectSuccessor(), liveLoopBodyLast);
 			
 			//merge liveDirect and liveELse
@@ -130,7 +130,7 @@ public class InterferenceGraph {
 			//liveness before the loop head again
 			Set<SSA> liveLoopHeadNew = buildIGFromBlock(loopHead, liveLoopBodyInitial);
 			
-			for(SSA result : loopHead.getPhiResults()) {
+			for(SSA result : loopHead.getPhiManager().getPhiResults()) {
 				liveLoopHeadNew.remove(result);
 				Cluster resultCluster = this.getCluster(result);
 				for(SSA x : liveLoopHeadNew) {
@@ -142,7 +142,7 @@ public class InterferenceGraph {
 			
 			//the block before the loop head
 			Set<SSA> liveBeforeLoop = liveLoopHeadNew;
-			liveBeforeLoop.addAll(loopHead.getPhiElses());
+			liveBeforeLoop.addAll(loopHead.getPhiManager().getPhiElses());
 			Set<SSA> liveInitial = buildIGFromBlock(curBB, liveBeforeLoop);
 			
 			return liveInitial;
