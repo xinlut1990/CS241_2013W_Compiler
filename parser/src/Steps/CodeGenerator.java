@@ -2,10 +2,11 @@ package Steps;
 
 import java.util.List;
 
-import DataStructures.ControlFlowGraph;
+import VariableManagement.VariableManager;
+
+import ControlFlowGraph.ControlFlowGraph;
 import DataStructures.Instruction;
 import DataStructures.Operand;
-import DataStructures.VariableManager;
 
 public class CodeGenerator {
 	//opcode

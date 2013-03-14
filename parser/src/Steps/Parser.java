@@ -4,14 +4,14 @@ package Steps;
 import java.util.ArrayList;
 import java.util.List;
 
+import VariableManagement.VariableManager;
+
+import ControlFlowGraph.BasicBlock;
+import ControlFlowGraph.ControlFlowGraph;
 import DataStructures.Array;
-import DataStructures.BasicBlock;
-import DataStructures.ControlFlowGraph;
 import DataStructures.Function;
 import DataStructures.Instruction;
-import DataStructures.IntermCodeGenerator;
 import DataStructures.Operand;
-import DataStructures.VariableManager;
 
 import cs241_compiler.Token;
 

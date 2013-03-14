@@ -3,14 +3,14 @@ package cs241_compiler;
 import java.io.File;
 import java.io.IOException;
 
+import ControlFlowGraph.ControlFlowGraph;
 import DataStructures.Instruction;
-import DataStructures.ControlFlowGraph;
-import DataStructures.VariableManager;
 import Steps.CodeGenerator;
 import Steps.Optimizer;
 import Steps.Parser;
 import Steps.RegisterAllocator;
 import Steps.Scanner;
+import VariableManagement.VariableManager;
 
 public class test {
 	public static void testOutput(int op, int a, int b, int c) {

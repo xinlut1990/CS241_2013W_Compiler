@@ -2,14 +2,15 @@ package Steps;
 
 import java.util.List;
 
+import VariableManagement.SSA;
+import VariableManagement.VariableManager;
 
-import DataStructures.BasicBlock;
-import DataStructures.ControlFlowGraph;
+
+import ControlFlowGraph.BasicBlock;
+import ControlFlowGraph.ControlFlowGraph;
 import DataStructures.Instruction;
 import DataStructures.InterferenceGraph;
 import DataStructures.Operand;
-import DataStructures.SSA;
-import DataStructures.VariableManager;
 
 public class RegisterAllocator {
 	private boolean[] registers;

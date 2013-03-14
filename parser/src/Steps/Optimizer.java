@@ -5,13 +5,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import VariableManagement.SSA;
+import VariableManagement.VariableManager;
 
-import DataStructures.BasicBlock;
-import DataStructures.ControlFlowGraph;
+
+import ControlFlowGraph.BasicBlock;
+import ControlFlowGraph.ControlFlowGraph;
 import DataStructures.Instruction;
 import DataStructures.Operand;
-import DataStructures.SSA;
-import DataStructures.VariableManager;
 
 
 public class Optimizer {

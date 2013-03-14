@@ -5,6 +5,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import VariableManagement.SSA;
+import VariableManagement.VariableManager;
+
+import ControlFlowGraph.BasicBlock;
+import ControlFlowGraph.ControlFlowGraph;
+
 public class InterferenceGraph {
 	private List<Cluster> clusters = new ArrayList<Cluster>();
 	private static int spillMemory = 2000;
@@ -68,30 +74,13 @@ public class InterferenceGraph {
 			BasicBlock joinBlock = curBB.getJoinSuccessor();
 			Set<SSA> liveJoin = buildIGRecursive(curBB.getJoinSuccessor(), liveLast);
 			
-			for(SSA result : joinBlock.getPhiManager().getPhiResults()) {
-				liveJoin.remove(result);
-				Cluster resultCluster = this.getCluster(result);
-				for(SSA x : liveJoin) {
-					Cluster xCluster = this.getCluster(x);
-					//add edge i <-> x
-					xCluster.connectWith(resultCluster);
-				}
-			}		
+			this.connectPhiFuncs(liveJoin, joinBlock);
 			
 			//liveness before the else block
-			Set<SSA> liveElseInitial = new HashSet<SSA>();
-			if(curBB.getElseSuccessor() != curBB.getJoinSuccessor()) {
-				Set<SSA> liveElseLast = new HashSet<SSA>();
-				liveElseLast.addAll(liveJoin);
-				liveElseLast.addAll(joinBlock.getPhiManager().getPhiElses());
-				liveElseInitial = buildIGRecursive(curBB.getElseSuccessor(), liveElseLast);
-			}
+			Set<SSA> liveElseInitial = this.elseBlockLive(liveJoin, joinBlock, curBB);
 			
 			//liveness before the if block
-			Set<SSA> liveDirectLast = liveJoin;
-			liveDirectLast.addAll(liveJoin);
-			liveDirectLast.addAll(joinBlock.getPhiManager().getPhiDirects());
-			Set<SSA> liveDirectInitial = buildIGRecursive(curBB.getDirectSuccessor(), liveDirectLast);
+			Set<SSA> liveDirectInitial = this.directBlockLive(liveJoin, joinBlock, curBB);
 			
 			//merge liveDirect and liveELse
 			liveDirectInitial.addAll(liveElseInitial);
@@ -110,35 +99,17 @@ public class InterferenceGraph {
 			//liveness before the loop head
 			Set<SSA> liveLoopHead = buildIGFromBlock(loopHead, new HashSet<SSA>(liveFollow));
 			
-			for(SSA result : loopHead.getPhiManager().getPhiResults()) {
-				liveLoopHead.remove(result);
-				Cluster resultCluster = this.getCluster(result);
-				for(SSA x : liveLoopHead) {
-					Cluster xCluster = this.getCluster(x);
-					//add edge i <-> x
-					xCluster.connectWith(resultCluster);
-				}
-			}
+			this.connectPhiFuncs(liveLoopHead, loopHead);
 			
 			//liveness at the end of loop body
-			Set<SSA> liveLoopBodyLast = liveLoopHead;
-			liveLoopBodyLast.addAll(loopHead.getPhiManager().getPhiDirects());
-			Set<SSA> liveLoopBodyInitial = buildIGRecursive(loopHead.getDirectSuccessor(), liveLoopBodyLast);
+			Set<SSA> liveLoopBodyInitial = this.loopBodyLive(liveLoopHead, loopHead);
 			
 			//merge liveDirect and liveELse
 			liveLoopBodyInitial.addAll(liveFollow);
 			//liveness before the loop head again
 			Set<SSA> liveLoopHeadNew = buildIGFromBlock(loopHead, liveLoopBodyInitial);
 			
-			for(SSA result : loopHead.getPhiManager().getPhiResults()) {
-				liveLoopHeadNew.remove(result);
-				Cluster resultCluster = this.getCluster(result);
-				for(SSA x : liveLoopHeadNew) {
-					Cluster xCluster = this.getCluster(x);
-					//add edge i <-> x
-					xCluster.connectWith(resultCluster);
-				}
-			}
+			this.connectPhiFuncs(liveLoopHeadNew, loopHead);
 			
 			//the block before the loop head
 			Set<SSA> liveBeforeLoop = liveLoopHeadNew;
@@ -154,6 +125,42 @@ public class InterferenceGraph {
 
 		}
 		
+	}
+	
+	private void connectPhiFuncs(Set<SSA> liveJoin, BasicBlock joinBlock) {
+		for(SSA result : joinBlock.getPhiManager().getPhiResults()) {
+			liveJoin.remove(result);
+			Cluster resultCluster = this.getCluster(result);
+			for(SSA x : liveJoin) {
+				Cluster xCluster = this.getCluster(x);
+				//add edge i <-> x
+				xCluster.connectWith(resultCluster);
+			}
+		}	
+	}
+	
+	private Set<SSA> directBlockLive( Set<SSA> liveJoin, BasicBlock joinBlock, BasicBlock headBlock ) {
+		
+		Set<SSA> liveDirectLast = new HashSet<SSA>();
+		liveDirectLast.addAll(liveJoin);
+		liveDirectLast.addAll(joinBlock.getPhiManager().getPhiDirects());
+		return buildIGRecursive(headBlock.getDirectSuccessor(), liveDirectLast);
+	}
+	
+	private Set<SSA> elseBlockLive( Set<SSA> liveJoin, BasicBlock joinBlock, BasicBlock headBlock ) {
+		
+		if(headBlock.getElseSuccessor() != headBlock.getJoinSuccessor()) {
+			Set<SSA> liveElseLast = new HashSet<SSA>();
+			liveElseLast.addAll(liveJoin);
+			liveElseLast.addAll(joinBlock.getPhiManager().getPhiElses());
+			return buildIGRecursive(headBlock.getElseSuccessor(), liveElseLast);
+		}
+		return new HashSet<SSA>();
+	}
+	
+	private Set<SSA> loopBodyLive( Set<SSA> liveLoopBodyLast, BasicBlock loopHead) {
+		liveLoopBodyLast.addAll(loopHead.getPhiManager().getPhiDirects());
+		return buildIGRecursive(loopHead.getDirectSuccessor(), liveLoopBodyLast);
 	}
 	
 	private Set<SSA> buildIGFromBlock(BasicBlock curBB, Set<SSA> live) {
@@ -174,6 +181,7 @@ public class InterferenceGraph {
 			live.remove(null);
 			//for all x belong to live do
 			
+			this.connectPhiFuncs(live, curBB);
 			for(SSA result : results) {
 				Cluster resultCluster = this.getCluster(result);
 				for(SSA x : live) {
@@ -182,6 +190,7 @@ public class InterferenceGraph {
 					xCluster.connectWith(resultCluster);
 				}
 			}	
+			
 			
 			//live = live + {j, k}
 			if(inst.getOperand1() != null) {
@@ -234,8 +243,6 @@ public class InterferenceGraph {
 		}
 
 		this.updateInterferenceGraph();
-
-
 
 	}
 	
@@ -310,8 +317,10 @@ public class InterferenceGraph {
 						
 						Operand loadAddr = Operand.makeConst(spillMemory);
 						Operand loadTemp = Operand.makeReg(26);
+						
 						Instruction load = Instruction.noUseInstruction(Instruction.load, loadAddr, loadTemp);
 						blockOfUse.insertBefore(useInst, load);
+						
 						if(useInst.getOperand1() != null && useInst.getOperand1().ssa == x.getSSAList().get(i)) {
 							useInst.setOperand1(loadTemp);
 						}

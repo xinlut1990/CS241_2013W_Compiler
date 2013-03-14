@@ -1,5 +1,8 @@
 package DataStructures;
 
+import VariableManagement.SSA;
+import ControlFlowGraph.BasicBlock;
+
 //Intermediate result of a expression or operand
 public class Operand{
 	public static final int unknown = 0;

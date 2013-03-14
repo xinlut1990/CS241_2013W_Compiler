@@ -3,6 +3,11 @@ package DataStructures;
 import java.util.ArrayList;
 import java.util.List;
 
+import VariableManagement.SSA;
+import VariableManagement.VariableManager;
+
+import ControlFlowGraph.BasicBlock;
+
 public class Function {
 	private int ident;
 	private BasicBlock funcBB = null;

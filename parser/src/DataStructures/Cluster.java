@@ -3,6 +3,8 @@ package DataStructures;
 import java.util.ArrayList;
 import java.util.List;
 
+import VariableManagement.SSA;
+
 public class Cluster {
 	private List<SSA> SSAList = new ArrayList<SSA>();
 

@@ -1,7 +1,10 @@
-package DataStructures;
+package ControlFlowGraph;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import DataStructures.Instruction;
+import DataStructures.Operand;
 
 
 public class BasicBlock {

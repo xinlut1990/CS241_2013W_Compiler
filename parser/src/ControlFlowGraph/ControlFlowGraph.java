@@ -1,9 +1,13 @@
-package DataStructures;
+package ControlFlowGraph;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import cs241_compiler.VCGPrinter;
+
+import DataStructures.Instruction;
 import Steps.Scanner;
+import VariableManagement.VariableManager;
 
 public class ControlFlowGraph {
 	private BasicBlock firstBlock;

@@ -1,5 +1,7 @@
 package DataStructures;
 
+import ControlFlowGraph.BasicBlock;
+
 
 //data structure of intermediate instruction
 public class Instruction {

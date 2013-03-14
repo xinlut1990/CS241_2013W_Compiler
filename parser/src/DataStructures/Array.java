@@ -3,6 +3,8 @@ package DataStructures;
 import java.util.List;
 import java.util.ArrayList;
 
+import VariableManagement.SSA;
+
 
 public class Array {
 	public static int curBase = 0;
