@@ -68,7 +68,7 @@ public class Instruction {
 		
 		if(operand2 != null) {
 			this.operand2.inst = this.getId();
-			if(operand2.ssa != null) {
+			if(operand2.ssa != null && this.operator != Instruction.move) {
 				operand2.ssa.addUse(operand2);
 			}
 		}

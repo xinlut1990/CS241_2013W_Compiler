@@ -181,7 +181,6 @@ public class InterferenceGraph {
 			live.remove(null);
 			//for all x belong to live do
 			
-			this.connectPhiFuncs(live, curBB);
 			for(SSA result : results) {
 				Cluster resultCluster = this.getCluster(result);
 				for(SSA x : live) {
@@ -267,7 +266,7 @@ public class InterferenceGraph {
 	
 	public void color() {
 		//get an arbitrary node x with fewer than N neighbors
-		Cluster x = this.getArbitraryCluster(25);
+		Cluster x = this.getArbitraryCluster(24);
 		//remove x along with attached edges from G
 		if(x != null) {
 			this.deleteCluster(x);
@@ -285,7 +284,7 @@ public class InterferenceGraph {
 		this.addCluster(x);
 		//choose a register for x that is different from neighbors
 		boolean regAssigned = false;
-		for( int i = 1; i < 26; i ++) {
+		for( int i = 1; i < 25; i ++) {
 			boolean regAvailable = true;
 			for(Cluster neighbor : x.getNeighborClusters()) {
 				if(neighbor.getSSA().getReg() == i) {
@@ -301,42 +300,58 @@ public class InterferenceGraph {
 		}
 		if(!regAssigned) {
 			//insert store code
-			for(int i = 0; i < x.getSSAList().size(); i ++) {
-				Instruction assignInst = ControlFlowGraph.getInstruction(x.getSSAList().get(i).getVersion());
-				BasicBlock blockOfAssign = ControlFlowGraph.findBlockOf(assignInst);
-				
-				Operand storeAddr = Operand.makeConst(spillMemory);
-				Instruction store = Instruction.noUseInstruction(Instruction.store, assignInst.getOperand1(), storeAddr);
-				store.setId(assignInst.getId());
-				blockOfAssign.replaceInst(assignInst, store);
-				
-				for(Operand use: x.getSSAList().get(i).getUseChain()) {
-					Instruction useInst = ControlFlowGraph.getInstruction(use.inst);
-					if(useInst != null && use.inst != x.getSSAList().get(i).getVersion()) {
-						BasicBlock blockOfUse = ControlFlowGraph.findBlockOf(useInst);
-						
-						Operand loadAddr = Operand.makeConst(spillMemory);
-						Operand loadTemp = Operand.makeReg(26);
-						
-						Instruction load = Instruction.noUseInstruction(Instruction.load, loadAddr, loadTemp);
-						blockOfUse.insertBefore(useInst, load);
-						
-						if(useInst.getOperand1() != null && useInst.getOperand1().ssa == x.getSSAList().get(i)) {
-							useInst.setOperand1(loadTemp);
-						}
-						if(useInst.getOperand2() != null && useInst.getOperand2().ssa == x.getSSAList().get(i)) {
-							useInst.setOperand2(loadTemp);
-						}
-					}
-					
-				}
-			}
-
+			this.insertSpillCode(x);
 			//out.println(x.getSSA().getIdentifier()+"spilled");
 			
 			spillMemory += 4;
 		}
 		
+	}
+	
+	private void insertSpillCode(Cluster x) {
+		for(int i = 0; i < x.getSSAList().size(); i ++) {
+			Instruction assignInst = ControlFlowGraph.getInstruction(x.getSSAList().get(i).getVersion());
+			BasicBlock blockOfAssign = ControlFlowGraph.findBlockOf(assignInst);
+			
+			Operand storeAddr = Operand.makeConst(spillMemory);
+			if(assignInst.getOperand1().kind == Operand.constant) {
+				Operand temp = Operand.makeReg(25);
+				Instruction store = Instruction.noUseInstruction(Instruction.store, temp, storeAddr);
+				store.setId(assignInst.getId());
+				blockOfAssign.replaceInst(assignInst, store);
+				Instruction move = Instruction.noUseInstruction(Instruction.move, assignInst.getOperand1(), temp);
+				move.setId(store.getId() - 1);
+				blockOfAssign.insertBefore(store, move);
+			} else {
+				Instruction store = Instruction.noUseInstruction(Instruction.store, assignInst.getOperand1(), storeAddr);
+				store.setId(assignInst.getId());
+				blockOfAssign.replaceInst(assignInst, store);
+			}
+			
+
+
+			
+			for(Operand use: x.getSSAList().get(i).getUseChain()) {
+				Instruction useInst = ControlFlowGraph.getInstruction(use.inst);
+				if(useInst != null && use.inst != x.getSSAList().get(i).getVersion()) {
+					BasicBlock blockOfUse = ControlFlowGraph.findBlockOf(useInst);
+					
+					Operand loadAddr = Operand.makeConst(spillMemory);
+					Operand loadTemp = Operand.makeReg(26);
+					
+					Instruction load = Instruction.noUseInstruction(Instruction.load, loadAddr, loadTemp);
+					blockOfUse.insertBefore(useInst, load);
+					
+					if(useInst.getOperand1() != null && useInst.getOperand1().ssa == x.getSSAList().get(i)) {
+						useInst.setOperand1(loadTemp);
+					}
+					if(useInst.getOperand2() != null && useInst.getOperand2().ssa == x.getSSAList().get(i)) {
+						useInst.setOperand2(loadTemp);
+					}
+				}
+				
+			}
+		}
 	}
 	
 	public void deleteCluster(Cluster cluster) {
@@ -361,9 +376,9 @@ public class InterferenceGraph {
 			for(SSA ssa : cluster.getSSAList()) {
 				System.out.println("born at " + ssa.getVersion());
 			}
-			for( Cluster adjaCluster : cluster.getNeighborClusters()) {
-				System.out.println("interfere with" + adjaCluster.getSSA().getVersion());
-			}
+//			for( Cluster adjaCluster : cluster.getNeighborClusters()) {
+//				System.out.println("interfere with" + adjaCluster.getSSA().getVersion());
+//			}
 		}
 	}
 	

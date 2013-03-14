@@ -1,29 +1,18 @@
 main
-var x, y;
-
-procedure bar( a );
-var b, c;
+  var a, b;
+  array[6] x;
+  
 {
-	let b <- 1;
-	let c <- 1;
-	let y <- b
-};
-
-function boo( a, b );
-var i;
-{
-	let i <- 0;
-		let x <- x * x;
-		call OutputNum(x);
-	return x + 4
-	
-};
-{
-	call bar( 1 );
-	let x <- 3 + 7 - 2;
-	let y <- ( 895 * 2 * 2 ) / 2;
-	call OutputNum(y);
-	let y <- y + call boo( 2, 4 );
-	call OutputNum(y)
-}
-.
+  let a <- call InputNum(); 
+  let b <- call InputNum();
+  let x[5] <- call InputNum();
+  let a <- a + 1;
+  let b <- b + x[5]; 
+  if a > 0 then
+    let b <- a;
+    let x[5] <- 3
+  fi;
+  let b <- b + a + x[5];   
+  let b <- b + x[5];
+  call OutputNum(b)
+}.

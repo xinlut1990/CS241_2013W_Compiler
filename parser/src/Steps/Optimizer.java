@@ -82,6 +82,7 @@ public class Optimizer {
 				Operand op2 = instList.get(i).getOperand2();
 				op1.ssa.removeUse(op1);
 				op2.ssa.removeUse(op2);
+				VariableManager.removeSSA(op2.ssa);
 				
 				this.cfg.removeFromBasicBlock(instList.get(i).getId());
 				instList.remove(i);
@@ -111,7 +112,7 @@ public class Optimizer {
 	// eliminate same expression
 	private void commonSubexpressionElimination() {
 		this.localCSE();
-		//this.globalCSE();
+		this.globalCSE();
 	}
 	
 	private void localCSE() {
@@ -128,6 +129,7 @@ public class Optimizer {
 						SSA tempToBeReplaced = VariableManager.getSSAByVersion(instJ.getId());
 						SSA tempToReplace = VariableManager.getSSAByVersion(instI.getId());
 						tempToBeReplaced.replaceAllUse(tempToReplace);
+						VariableManager.removeSSA(tempToBeReplaced);
 					}
 				}
 			}
@@ -179,10 +181,13 @@ public class Optimizer {
 			subTree.addAll(globalCSERecursive(bb));
 		}
 		for(BasicBlock dominatedBlock : subTree) {
+			
 			List<Instruction> instListI = curBB.getInstructions();
 			List<Instruction> instListJ = dominatedBlock.getInstructions();
+			
 			for(int i = instListI.size() - 1; i >= 0; i--) {
 				for(int j = instListJ.size() - 1; j >= 0; j--) {
+					
 					Instruction instI = instListI.get(i);
 					Instruction instJ = instListJ.get(j);
 					//eliminate
@@ -191,6 +196,7 @@ public class Optimizer {
 						SSA tempToBeReplaced = VariableManager.getSSAByVersion(instJ.getId());
 						SSA tempToReplace = VariableManager.getSSAByVersion(instI.getId());
 						tempToBeReplaced.replaceAllUse(tempToReplace);
+						VariableManager.removeSSA(tempToBeReplaced);
 					}
 				}
 			}

@@ -7,6 +7,7 @@ import Steps.Optimizer;
 import Steps.Parser;
 import Steps.RegisterAllocator;
 import Steps.Scanner;
+import VariableManagement.VariableManager;
 
 
 public final class Compiler {
@@ -16,10 +17,11 @@ public final class Compiler {
 	
 	public static void main(String[] args) {
 		
-		Scanner sc = new Scanner(new File("testprogs/test002.txt"));
+		Scanner sc = new Scanner(new File("test"));
 		
 		Parser ps = new Parser(sc);
 		ps.parse();
+		VariableManager.printSSAList();
 		
 		Optimizer op = new Optimizer(ps);
 		op.optimize();

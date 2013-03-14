@@ -3,62 +3,69 @@ layoutalgorithm: dfs
 manhattan_edges: yes
 smanhattan_edges: yes
 node: {
-title: "141"
-label: "141[
-0 : move    ,
-1 : move 0  a_1 R1 ,
-2 : move 0  b_2 R2 ,
-3 : move 0  c_3 R3 ,
-4 : move 0  d_4 R8 ,
-5 : read (5) R4   ,
-6 : move (5) R4  R27 ,
-7 : write   (5) R4 ,
-8 : wln    ,
-9 : move b_2 R2  b_11 R6 ,
-10 : move c_3 R3  c_10 R7 ,
+title: "0"
+label: "0[
+0 : move 0  a_0 ,
+1 : move 0  b_1 ,
+2 : move 0  (2) ,
+3 : read (3)   ,
+4 : move (3)  a_4 ,
+5 : read (5)   ,
+6 : move (5)  b_6 ,
+7 : add R28  (2) ,
+8 : adda 20  (7) ,
+9 : read (9)   ,
+10 : store (9)  (8) ,
+11 : add a_4  1 ,
+12 : move (11)  a_12 ,
+13 : add R28  (2) ,
+14 : adda 20  (13) ,
+15 : load (14)   ,
+16 : add b_6  (15) ,
+17 : move (16)  b_17 ,
+18 : cmp a_12  0 ,
+19 : ble (18)  [1] ,
 ]"
 }
-edge: { sourcename: "141"
-targetname: "142"
+edge: { sourcename: "0"
+targetname: "2"
+color: blue
+}
+edge: { sourcename: "0"
+targetname: "1"
 color: blue
 }
 node: {
-title: "142"
-label: "142[
-11 : cmp b_11 R6  c_10 R7 ,
-12 : ble (11)  [144] ,
+title: "1"
+label: "1[
+21 : PHI b_21 := b_20 b_17 ,
+26 : add b_21  a_12 ,
+27 : add R28  (2) ,
+28 : adda 20  (27) ,
+29 : load (28)   ,
+30 : add (26)  (29) ,
+31 : move (30)  b_31 ,
+32 : add R28  (2) ,
+33 : adda 20  (32) ,
+34 : load (33)   ,
+35 : add b_31  (34) ,
+36 : move (35)  b_36 ,
+37 : write   b_36 ,
+38 : end    ,
 ]"
-}
-edge: { sourcename: "142"
-targetname: "143"
-color: blue
-}
-edge: { sourcename: "142"
-targetname: "144"
-color: blue
 }
 node: {
-title: "143"
-label: "143[
-13 : read (13) R5   ,
-14 : add c_10 R7  1 ,
-15 : move (13) R5  R27 ,
-16 : write   (13) R5 ,
-17 : wln    ,
-18 : add b_11 R6  1 ,
-19 : move [142]  R27 ,
-20 : move (13) R5  d_9 R8 ,
-21 : bra   [142] ,
+title: "2"
+label: "2[
+20 : move a_12  b_20 ,
+22 : add R28  (2) ,
+23 : adda 20  (22) ,
+24 : move 3  (24) ,
+25 : store (24)  (23) ,
 ]"
 }
-edge: { sourcename: "143"
-targetname: "142"
+edge: { sourcename: "2"
+targetname: "1"
 color: blue
-}
-node: {
-title: "144"
-label: "144[
-22 : end    ,
-]"
 }
 }

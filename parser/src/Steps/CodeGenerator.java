@@ -172,7 +172,7 @@ public class CodeGenerator {
 			case Instruction.store:
 				a = operand1.regno;
 				if(operand2.kind == Operand.constant) {
-					c = operand1.val;
+					c = operand2.val;
 					PutF1(STW, a, b, c);
 				} else {
 					b = operand2.regno;
@@ -226,7 +226,7 @@ public class CodeGenerator {
 			if(a != 0) {
 				PutF1(ADDI, a, b, c);
 			}
-		} else if(operand1.kind == Operand.var) {
+		} else if(operand1.kind == Operand.var || operand1.kind == Operand.reg) {
 			c = operand1.regno;
 			if(a != 0) {
 				PutF1(ADD, a, b, c);

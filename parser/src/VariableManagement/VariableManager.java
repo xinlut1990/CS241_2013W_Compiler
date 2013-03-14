@@ -117,5 +117,12 @@ public class VariableManager {
 	public static void addConstant(int constant, SSA ssa) {
 		constAssignments.put(constant, ssa);
 	}
+	
+	public static void printSSAList() {
+		for(SSA ssa : SSAList) {
+			System.out.println(ssa.getVersion());
+		}
+
+	}
 		
 }

@@ -55,7 +55,8 @@ public class RegisterAllocator {
 		//build interference graph
 		InterferenceGraph ig = new InterferenceGraph();
 		ig.buildIG(this.cfg);
-		//ig.printGraph();
+		//VariableManager.printSSAList();
+		ig.printGraph();
 		//this.cfg.printCFG();		
 		ig.clustering(this.cfg.getInstList());
 		ig.color();

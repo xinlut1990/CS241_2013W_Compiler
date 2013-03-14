@@ -47,7 +47,7 @@ public class Parser {
 	
 	public void parse() {
 		this.computation();
-		//cfg.printCFG();
+		cfg.printCFG();
 		//cfg.printDominatorTree();
 	}
 
